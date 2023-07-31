@@ -1,0 +1,4 @@
+node_modules
+dist
+backend/config/db.config.js
+backend/config/jwt.config.js
