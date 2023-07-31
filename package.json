@@ -1,0 +1,39 @@
+{
+  "name": "kitchen.rottinger.net",
+  "version": "1.0.0",
+  "description": "A recipe website",
+  "main": "index.js",
+  "scripts": {
+    "svelte": "cross-env webpack --env compile=svelte",
+    "dev": "webpack serve"
+  },
+  "author": "Quasar",
+  "dependencies": {
+    "argon2": "^0.30.3",
+    "cookie": "^0.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "jsonwebtoken": "^9.0.1",
+    "mysql2": "^3.2.0",
+    "sequelize": "^6.29.2",
+    "svelte": "^4.0.0",
+    "svelte-spa-router": "^3.3.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.5",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.22.5",
+    "babel-loader": "^9.1.2",
+    "css-loader": "^6.8.1",
+    "dotenv-webpack": "^8.0.1",
+    "html-webpack-plugin": "^5.5.3",
+    "mini-css-extract-plugin": "^2.7.6",
+    "svelte-loader": "^3.1.9",
+    "svg-loader": "^0.0.2",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  }
+}
