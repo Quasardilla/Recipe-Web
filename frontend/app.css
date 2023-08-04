@@ -1,5 +1,12 @@
+@font-face {
+	font-family: "AvenirLocal";
+	src: url("./assets/fonts/Avenir.ttc");
+}
+
 :root {
     font-size: 10;
+
+    font-family: AvenirLocal, Avenir, Helvetica, Arial, sans-serif;
 }
 
 body {

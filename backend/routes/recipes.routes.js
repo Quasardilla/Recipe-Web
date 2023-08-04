@@ -8,11 +8,6 @@ module.exports = app => {
 	
 	/* START OF ROUTES */
 
-	Router.post("/", Controller.refreshAccessToken);
-
-    Router.delete("/", Controller.deleteToken);
-
-	Router.get("/", Controller.validateToken);
 	
 	/* END OF ROUTES */
 

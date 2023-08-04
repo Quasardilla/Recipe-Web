@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors');
 const path = require("path");
 const fs = require("fs");
+var cookie = require('cookie');
 const rateLimit = require('express-rate-limit')
 
 const app = express()
@@ -29,6 +30,22 @@ db.conn.sync()
 	.catch((err) => {
 		console.log("Failed to sync db: " + err.message);
 	});
+
+function onRequest(req, res) {
+	if (req.body) {
+		// Set a new cookie with the name
+		res.setHeader('Set-Cookie', cookie.serialize('name', String(query.name), {
+		httpOnly: true,
+		maxAge: 60 * 60 * 24 * 7 // 1 week
+		}));
+	
+		// Redirect back after setting cookie
+		res.statusCode = 302;
+		res.setHeader('Location', req.headers.referer || '/');
+		res.end();
+		return;
+	}
+}
 
 // home page routing
 app.get("/", (req, res) => {

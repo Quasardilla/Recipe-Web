@@ -4,6 +4,7 @@ const argon2 = require("argon2");
 const { Op } = require("sequelize");
 const jwtManager = require("../universal/jwtManager.js");
 const { v4: uuidv4 } = require('uuid');
+const {OAuth2Client} = require('google-auth-library');
 
 const Model = db[manager.fileName];
 const UserInfoModel = db["user-infos"]
@@ -58,6 +59,58 @@ exports.createUser = (req, res) => {
         });
       });
   };
+
+exports.createGoogleUser = async (req, res) => {	
+    let userInfo = await verifyGoogleToken({clientId: req.body.clientId, credential: req.body.credential})
+    if(userInfo == null) {
+        res.status(401).send({
+            message: "Invalid Google Token."
+        })
+        return;
+    }
+  
+    let user = {
+        UUID: userInfo.userId,
+        username: userInfo.username,
+        email: userInfo.email,
+    }
+
+    // Save the User in the database
+    Model.create(user)
+        .then(async data => {
+            res.status(200).send({
+                message: "User was created successfully."
+            })
+        })
+        .catch(err => {
+            res.status(500).send({
+            message:
+                err.message || "Some error occurred while creating the User."
+            });
+        });
+  };
+
+  async function verifyGoogleToken(info) {
+    const client = new OAuth2Client();
+        const ticket = await client.verifyIdToken({
+            idToken: info.credential,
+            audience: info.clientId,  // Specify the CLIENT_ID of the app that accesses the backend
+            // Or, if multiple clients access the backend:
+            //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+        }).catch(err => {
+            console.log(err)
+            return null;
+        });
+
+        const payload = ticket.getPayload();
+
+        return {
+            email: payload['email'],
+            name: payload['name'],
+            picture: payload['picture'],
+            userId: payload['sub']
+        };
+    }
 
 exports.deleteUser = async (req, res) => {
 
@@ -115,7 +168,7 @@ exports.deleteUser = async (req, res) => {
         });
     }
     else {
-        res.status(400).send({
+        res.status(401).send({
             message: "Password is incorrect."
         });
         return;

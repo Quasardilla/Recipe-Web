@@ -10,9 +10,7 @@ module.exports = app => {
 
 	Router.post("/", Controller.validateUser);
 
-	// Router.get("/", Controller.getAll);
-
-	// Router.get("/:password", Controller.getInfo);
+	Router.post("/google", Controller.validateGoogleUser);
 	
 	/* END OF ROUTES */
 

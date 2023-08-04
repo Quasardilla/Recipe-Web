@@ -9,14 +9,12 @@ module.exports = app => {
 	/* START OF ROUTES */
 
 	Router.post("/", Controller.createUser);
+	
+	Router.post("/google", Controller.createGoogleUser);
 
     Router.post("/taken/", Controller.checkUsernameTaken);
 
 	Router.delete("/", Controller.deleteUser)
-
-	// Router.get("/", Controller.getAll);
-
-	// Router.get("/:password", Controller.getInfo);
 	
 	/* END OF ROUTES */
 

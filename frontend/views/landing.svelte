@@ -1,9 +1,21 @@
 <script>
-import CardCarrousel from "../modules/cardCarrousel.svelte";
-import test1 from "../assets/icons/test1.png";
-import test2 from "../assets/icons/test2.jpg";
-import test3 from "../assets/icons/test3.png";
-import test4 from "../assets/icons/test4.jpg";
+    import CardCarrousel from "../modules/cardCarrousel.svelte";
+    let scripts = require('../sharedScripts.js')
+    import test1 from "../assets/imgs/test1.png";
+    import test2 from "../assets/imgs/test2.jpg";
+    import test3 from "../assets/imgs/test3.png";
+    import test4 from "../assets/imgs/test4.jpg";
+
+    //IIFE to run as soon as it's defined, not waiting for page to load
+    (() => {
+        scripts.requestWithToken('https://kitchen.quasardilla.com/api/tokens/', 'GET')
+        .then((response) => {
+            if(response.status == 200) {
+                window.location.href = 'https://kitchen.quasardilla.com/#/home'
+            }
+        })
+    })()
+
 </script>
 
 <main>

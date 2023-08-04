@@ -1,30 +1,41 @@
 <script>
-
+    import KitchenIcon from '../assets/icons/KitchenIconTextTransparent2.svg';
 </script>
 
 <main>
     <nav id="navBar">
         <div id="logo">
-            <img alt="main-icon"/>
+            <a href="https://kitchen.quasardilla.com/">
+                <img alt="main-icon" src={KitchenIcon}/>
+            </a>
         </div>
         <div id="search">
             <img id="search-icon" alt="search-icon"/>
             <button id="search-bar-mini"></button>
         </div>
-        <button id="profile">
-            <img alt="profile-icon"/>
-        </button>
+        <div id="profile-content">
+            <button id="profile">
+                <img alt="profile-icon"/>
+            </button>
+
+        </div>
     </nav>
 </main>
 
 <style>
     #navBar {
-        width: 100%;
-        height: 6rem;
+        height: 7rem;
         background-color: gray;
+        padding: 0 2rem 0 2rem;
         align-items: center;
         display: flex;
         justify-content: space-between;
+    }
+
+    #profile-content {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
     }
 
     #profile {
@@ -33,7 +44,7 @@
     }
 
     #logo img {
-        height: 5rem;
+        height: 100%;
         width: auto;
     }
 </style>
