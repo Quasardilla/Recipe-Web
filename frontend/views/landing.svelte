@@ -1,43 +1,37 @@
 <script>
     import CardCarrousel from "../modules/cardCarrousel.svelte";
-    let scripts = require('../sharedScripts.js')
-    import test1 from "../assets/imgs/test1.png";
-    import test2 from "../assets/imgs/test2.jpg";
-    import test3 from "../assets/imgs/test3.png";
-    import test4 from "../assets/imgs/test4.jpg";
+    import placeholder from "../assets/imgs/KitchenPlaceHolder.svg";
+    let scripts = require('../sharedScripts.js');
 
-    //IIFE to run as soon as it's defined, not waiting for page to load
     (() => {
         scripts.requestWithToken('https://kitchen.quasardilla.com/api/tokens/', 'GET')
         .then((response) => {
-            if(response.status == 200) {
-                window.location.href = 'https://kitchen.quasardilla.com/#/home'
-            }
+            if(response.status == 200)
+                window.location.href = 'https://kitchen.quasardilla.com/#/home';
         })
     })()
-
 </script>
 
 <main>
     <div id="hero-banner">
-        <img alt="hero banner"/>
+        <img alt="hero banner" src={placeholder}/>
     </div>
 
     <CardCarrousel cards={[
     {   
-        img: test1, 
+        img: placeholder, 
         text: '1'
     },
     {   
-        img: test2, 
+        img: placeholder, 
         text: '2'
     },
     {   
-        img: test3, 
+        img: placeholder, 
         text: '3'
     },
     {   
-        img: test4, 
+        img: placeholder, 
         text: '4'
     },
 ]}/>
@@ -50,7 +44,7 @@
 
     #hero-banner img {
         width: 100%;
-        height: 50rem;
+        height: 70rem;
         background-repeat: no-repeat;
     }
 </style>

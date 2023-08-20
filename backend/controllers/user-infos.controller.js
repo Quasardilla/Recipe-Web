@@ -138,3 +138,7 @@ async function verifyGoogleToken(info) {
             userId: payload['sub']
         };
 }
+
+exports.logoutUser = (req, res) => {
+    jwtManager.logoutUser(req, res);
+}

@@ -72,6 +72,9 @@ exports.VerifyRefreshToken = (token, req, res) => {
             }
             else if(!data.valid) {
                 // If the token is invalid, delete all tokens in the same family
+                res.clearCookie('accessToken');
+                res.clearCookie('refreshToken');
+
                 Model.destroy({
                     where: {
                         familyUUID: data.familyUUID,
@@ -144,4 +147,39 @@ exports.VerifyAccessToken = (req, res) => {
     });
 
     return shouldAbort;
+}
+
+exports.logoutUser = (req, res) => {
+    var cookies = cookie.parse(req.headers.cookie || '');
+    const token = cookies.refreshToken;
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    Model.findOne({
+        where: {
+            token: token,
+        }
+    }).then(async data => {
+        console.log(data)
+        Model.destroy({
+            where: {
+                familyUUID: data.familyUUID,
+            }
+        }).then(num => {
+            if (num == 1) {
+                res.status(200).send({
+                    message: "User was logged out successfully."
+                })
+            } else {
+                res.status(400).send({
+                    message: `Cannot logout user.`
+                })
+            }
+        }).catch(err => {
+            res.status(500).send({
+                message: "Server Error."
+            });
+        })
+    })
 }

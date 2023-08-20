@@ -4,12 +4,53 @@
 }
 
 :root {
-    font-size: 10;
+    font-size: 10px;
 
     font-family: AvenirLocal, Avenir, Helvetica, Arial, sans-serif;
+
+    --font-family: AvenirLocal, Avenir, Helvetica, Arial, sans-serif;
+
+    --primary: #57585e;
+    --primary-dark: #44454a;
+    --secondary: #a7a7b5;
+    --secondary-dark: #7f7f8a;
+    --tertiary: #b16af0;
+    --tertiary-dark: #63319e;
+
+    --text-color: #fff;
 }
 
 body {
     font-size: 1.6rem;
     margin: 0;
+    background-color: var(--primary)
 }
+
+.light-icon, .dark-icon, .light-icon-inline, .dark-icon-inline {
+    display: none;
+}
+
+.dark-theme .dark-icon {
+    display: block;
+}
+
+.dark-theme .dark-icon-inline {
+    display: inline-block;
+}
+
+.light-theme .light-icon {
+    display: block;
+}
+
+.light-theme .light-icon-inline {
+    display: inline-block;
+}
+
+.logged-in-item, .logged-in .logged-out-item {
+    display: none;
+}
+
+.logged-in .logged-in-item {
+    display: block;
+}
+

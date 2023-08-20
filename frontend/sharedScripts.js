@@ -1,7 +1,3 @@
-// import { location } from 'svelte-spa-router';
-
-// let location = require('svelte-spa-router').location;
-
 export async function protectedRequest(url, method, data) {
     return fetch(url, {
         method: method,

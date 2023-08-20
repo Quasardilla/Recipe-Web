@@ -11,6 +11,8 @@ module.exports = app => {
 	Router.post("/", Controller.validateUser);
 
 	Router.post("/google", Controller.validateGoogleUser);
+
+	Router.post("/logout", Controller.logoutUser);
 	
 	/* END OF ROUTES */
 

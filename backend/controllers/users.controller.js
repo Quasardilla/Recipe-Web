@@ -12,6 +12,9 @@ const UserInfoModel = db["user-infos"]
 // Create and Save a new User
 exports.createUser = (req, res) => {	
   console.log(req.body)
+
+  if(validateInput(req, res))
+    return;
   
   // Validate request
     if (!req.body.username || !req.body.email || !req.body.password) {
@@ -206,3 +209,34 @@ exports.checkUsernameTaken = async (req, res) => {
         });
     });
   }
+
+function validateInput(req, res) {
+    if(!validateUsername(req.body.username)) {
+        res.status(400).send({
+            message: "Username is invalid."
+        });
+    }
+    else if(!validatePassword(req.body.password)) {
+        res.status(400).send({
+            message: "Password is invalid."
+        });
+    }
+}
+
+function validateUsername(username) {
+    if(username.length < 4 || username.length > 20 || !username.match(/^[a-zA-Z0-9]+$/)) {
+        return false;
+    }
+    
+    return true;
+
+}
+
+// Atleast 8 characters long, 1 capital character, 1 lowercase character,  1 number, 1 special character
+function validatePassword(password) {
+    if(password.length < 8 || !password.match(/[a-z]/g) || !password.match(/[A-Z]/g) || !password.match(/\d/g) || !password.match(/\W/g)) {
+        return false;
+    }
+
+    return true;
+}

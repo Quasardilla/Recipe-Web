@@ -7,7 +7,7 @@
     import home from './views/home.svelte'
 </script>
 
-<main style="width: 100%; height: 100%;">
+<main style="width: 100%; height: auto; background-color: var(--primary)">
     <Navbar />
 
     <Router routes ={{

@@ -1,25 +1,19 @@
 <script>
     import { onMount } from 'svelte';
-    
+    import Cancel from '../assets/icons/Cancel.svg';
+    import CancelDark from '../assets/icons/CancelDark.svg';
+    import Check from '../assets/icons/Check.svg';
+    import CheckDark from '../assets/icons/CheckDark.svg';
+
     let createAccount = false;
 
+    let charLength = false;
+    let charUpper = false;
+    let charLower = false;
+    let charSpecial = false;
+    let charNumber = false;
+
     onMount(async () => {       
-        onLoad();
-    })
-
-    globalThis.googleButton = (data) => {
-        console.log("google button was pressed")
-        console.log(createAccount ? "register" : "login")
-
-        if(createAccount)
-            submitRegisterGoogle(data)
-        else
-            submitLoginGoogle(data)
-    }
-
-
-
-    function onLoad() {
         google.accounts.id.initialize({
         client_id: '1031211223829-rcpnm0oir864p1odjhf0jkfbicirvs7v.apps.googleusercontent.com',
         callback: googleButton,
@@ -40,12 +34,22 @@
             shape: 'rectangular',
             logo_alignment: 'left',
         })
+    })
+
+    globalThis.googleButton = (data) => {
+        console.log("google button was pressed")
+        console.log(createAccount ? "register" : "login")
+
+        if(createAccount)
+            submitRegisterGoogle(data)
+        else
+            submitLoginGoogle(data)
     }
 
     function submitLogin() {
         let creds = {
             username: document.getElementById('login-form').elements.username.value,
-            password: hashPassword(document.getElementById('login-form').elements.password.value)
+            password: document.getElementById('login-form').elements.password.value
         }
 
         fetch('https://kitchen.quasardilla.com/api/user-infos/', {
@@ -97,25 +101,94 @@
     }
 
     function submitRegister(e) {
+        if(!validateEmail() || !validateUsername() || !validatePassword() || !checkPasswords()) {
+            return;
+        }
+
         let newUser = {
             email: document.getElementById('register-form').elements.email.value,
             username: document.getElementById('register-form').elements.username.value,
             password: document.getElementById('register-form').elements.password.value
         }
 
-        fetch('https://kitchen.quasardilla.com/api/users/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newUser)
-        }).then(response => {
-            if (response.status == 200) {
-                createAccount = false;
-            } else {
-                document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
-            }
-        })
+        console.log('password works')
+
+        // fetch('https://kitchen.quasardilla.com/api/users/', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify(newUser)
+        // }).then(response => {
+        //     if (response.status == 200) {
+        //         createAccount = false;
+        //     } else {
+        //         document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
+        //     }
+        // })
+    }
+
+    function validateEmail() {
+        let form = document.getElementById('register-form')
+        let email = form.elements.email;
+
+        if(!email.checkValidity) {
+            document.getElementById('reg-email-err').innerHTML = 'Please enter a valid email address!';
+            return false;
+        }
+
+        document.getElementById('reg-email-err').innerHTML = '';
+        return true;
+    }
+
+    function validateUsername() {
+        let form = document.getElementById('register-form')
+        let username = form.elements.username.value;
+
+        if(username.length < 4 || username.length > 20) {
+            document.getElementById('reg-user-err').innerHTML = 'Username must be 4 - 20 characters long!';
+            return false;
+        }
+        
+        if(!username.match(/^[a-zA-Z0-9]+$/)) {
+            document.getElementById('reg-user-err').innerHTML = 'Username must only contain letters and numbers!';
+            return false;
+        }
+        
+        document.getElementById('reg-user-err').innerHTML = '';
+        return true;
+
+    }
+
+    // Atleast 8 characters long, 1 capital character, 1 lowercase character,  1 number, 1 special character
+    function validatePassword() {
+        let form = document.getElementById('register-form')
+        let password = form.elements.password.value;
+
+        password.length < 8 ? charLength = false : charLength = true;
+        !password.match(/[a-z]/g) ? charLower = false : charLower = true;
+        !password.match(/[A-Z]/g) ? charUpper = false : charUpper = true;
+        !password.match(/\d/g) ? charNumber = false : charNumber = true;
+        !password.match(/\W/g) ? charSpecial = false : charSpecial = true;
+
+        if(charLength && charLower && charUpper && charNumber && charSpecial) {
+            return true;
+        }
+    }
+
+    function checkPasswords() {
+        let form = document.getElementById('register-form')
+        let password = form.elements.password.value;
+        let passwordConf = form.elements.confpassword.value;
+
+        if(password == passwordConf) {
+            document.getElementById('reg-pass-conf-err').innerHTML = '';
+            return true;
+        }
+
+        document.getElementById('reg-pass-conf-err').innerHTML = 'Passwords do not match!';
+        return false;
+
     }
 
     function submitRegisterGoogle(data) {
@@ -134,10 +207,6 @@
         })
     }
 
-    function hashPassword(password) {
-        return password;
-    }
-
 </script>
 
 <main>
@@ -153,20 +222,11 @@
             </div>
             <button class="form-button" type="submit"> Log In </button>
             <div class="google-button">
-                <!-- <div id="g_id_onload"
-                    data-client_id="1031211223829-rcpnm0oir864p1odjhf0jkfbicirvs7v.apps.googleusercontent.com"
-                    data-context="signin"
-                    data-ux_mode="popup"
-                    data-callback="googleButton"
-                    data-auto_prompt="false">
-                </div> -->
-        
-                <div id="g-signin">
-                </div>
+                <div id="g-signin"></div>
             </div>
             <a href="./">
                 <p class="form-text">
-                    Forgot your username/password?
+                    Forgot your password?
                 </p>
             </a>
             <a href="./" on:click|preventDefault={() => {createAccount = true}}>
@@ -182,19 +242,27 @@
             <h1 class="form-title">Register</h1>
             <div class="form-group">
                 <input type="email" name="email" placeholder="Email"/>
-                <p class="input-error">Please enter a valid email address!</p>
+                <p class="input-error" id="reg-email-err"></p>
             </div>
             <div class="form-group">
-                <input type="text" name="username" placeholder="Username"/>
-                <p class="input-error">Usernames must consist of more than 4 and less than 20 characters.</p>
+                <input type="text" name="username" placeholder="Username" on:input={validateUsername}/>
+                <p class="input-error" id="reg-user-err"></p>
             </div>
             <div class="form-group">
-                <input type="password" name="password" autocomplete="off" placeholder="Password"/>
-                <p class="input-error">Passwords must contain uppercase, lowercase, special(!@#$%^&*) characters and a number</p>
+                <input type="password" name="password" autocomplete="off" placeholder="Password" on:input={validatePassword}/>
+                <p class="input-error" id="reg-pass-err"></p>
+
+                <div id="password-checklist">
+                    <p><img alt='' class="dark-icon-inline" src={charLength ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 8 characters long</p>
+                    <p><img alt='' class="dark-icon-inline" src={charUpper ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 upper-case letter</p>
+                    <p><img alt='' class="dark-icon-inline" src={charLower ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 lower-case letter</p>
+                    <p><img alt='' class="dark-icon-inline" src={charNumber ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 number</p>
+                    <p><img alt='' class="dark-icon-inline" src={charSpecial ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 special character</p>
+                </div>
             </div>
             <div class="form-group">
-                <input type="password" name="conf-password" autocomplete="off" placeholder="Confirm Password"/>
-                <p class="input-error">Passwords do not match!</p>
+                <input type="password" name="confpassword" autocomplete="off" placeholder="Confirm Password"/>
+                <p class="input-error" id="reg-pass-conf-err"></p>
             </div>
             <button type="submit" class="form-button"> Sign Up </button>
             <div class="google-button">
@@ -213,15 +281,19 @@
     #form-container {
         display: flex;
         justify-content: center;
-        align-items: center;
-        height: 80%;
+        padding: 13rem 0 2rem 0;
         text-align: center;
     }
     
     #form-container form {
-        border: 2px solid rgba(0, 0, 0, 0.2);
+        background-color: var(--primary-dark);
+        border: 2px solid var(--secondary-dark);
         padding: 2rem;
         width: 50rem;
+    }
+
+    #form-container form .form-title {
+        color: var(--text-color);
     }
 
     .form-group input {
@@ -229,7 +301,7 @@
         width: 100%;
         padding: 1rem;
         margin: 1rem 0;
-        border: 2px solid rgba(0, 0, 0, 0.2);
+        border: 2px solid var(--secondary-dark);
         font-size: 1.5rem;
     }
 
@@ -245,12 +317,15 @@
         padding: 1rem;
         margin: 1rem 0;
         border: 2px solid rgba(0, 0, 0, 0.2);
-        font-size: 1.5rem;
-        background-color: #f5f5f5;
+        font-size: 2rem;
+        color: var(--text-color);
+        background-color: var(--tertiary);
+        border-color: var(--secondary-dark);
+        transition: ease-in-out 200ms;
     }
 
     .form-button:hover {
-        background-color: #e5e5e5;
+        background-color: var(--tertiary-dark);
         cursor: pointer;
     }
 
@@ -258,5 +333,20 @@
         display: flex;
         justify-content: center;
         padding: 1rem 0 1rem 0;
+    }
+
+    #password-checklist {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin: 0;
+        padding: 0;
+        color: var(--text-color);
+    }
+
+    #password-checklist img {
+        height: 3rem;
+        width: auto;
+        vertical-align: middle;
     }
 </style>

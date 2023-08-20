@@ -1,7 +1,9 @@
 <script defer>
     import { onMount } from "svelte";
-    import leftArrow from '../assets/icons/arrow_back.svg'
-    import rightArrow from '../assets/icons/arrow_forward.svg'
+    import LeftArrowDark from '../assets/icons/ArrowBackDark.svg'
+    import LeftArrowLight from '../assets/icons/ArrowBack.svg'
+    import RightArrowDark from '../assets/icons/ArrowForwardDark.svg'
+    import RightArrowLight from '../assets/icons/ArrowForward.svg'
     export let cards;
 
     let card1;
@@ -33,6 +35,10 @@
   });
 
     function rotateRight() {
+        if(animateCards) {
+            return;
+        }
+
         if(currentPos < cardCount - 1) {
             direction = 1;
             card3.addEventListener("animationend", cardAnimationEnd, false);
@@ -45,6 +51,10 @@
     }
     
     function rotateLeft() {
+        if(animateCards) {
+            return;
+        }
+
         if(currentPos > 0) {
             direction = -1;
             card3.addEventListener("animationend", cardAnimationEnd, false);
@@ -132,7 +142,8 @@
 <main>
     <div id="card-container">
         <button class="nav-button" id="left-nav-button" on:click={rotateLeft}>
-            <img alt="left arrow" src={leftArrow}/>
+            <img alt="left arrow" class="dark-icon" src={LeftArrowDark}/>
+            <img alt="left arrow" class="light-icon" src={LeftArrowLight}/>
         </button>
         
         <!--Right card (off-screen)-->
@@ -157,40 +168,40 @@
         </div>
 
         <button class="nav-button" id="right-nav-button" on:click={rotateRight}>
-            <img alt="right arrow" src={rightArrow}/>
+            <img alt="right arrow" class="dark-icon" src={RightArrowDark}/>
+            <img alt="right arrow" class="light-icon" src={RightArrowLight}/>
         </button>
     </div>
 
 </main>
 
 <style>
+    main {
+        overflow: hidden;
+    }
+
     .nav-button {
         width: 4%;
         height: 100%;
         align-items: center;
         justify-content: center;
-        background-color: rgba(125, 125, 125, 0.10);
-        border: rgba(100, 100, 100, 0.20) solid 2px;
-        border-radius: 2rem;
-
+        background-color: var(--secondary-dark);
+        border: var(--secondary) solid 0.2rem;
+        opacity: 0.3;
+        border-radius: 1000rem;
         z-index: 10;
 
         transition: all 300ms ease-in-out;
     }
 
     .nav-button:hover {
-        background-color: rgba(125, 125, 125, 0.5);
-        border: rgba(100, 100, 100, 1) solid 2px;
+        opacity: 1;
+        background-color: var(--secondary-dark);
+        border: var(--secondary) solid 0.2rem;
         cursor: pointer;
     }
 
-    .nav-button:hover img {
-        filter: invert(30%);
-        opacity: 1;
-    }
-
     .nav-button img {
-        opacity: 0.1;
         margin: auto;
         width: 100%;
         transition: all 300ms ease-in-out;
@@ -200,14 +211,13 @@
         height: 40vw;
         display: flex;
         justify-content: space-between;
-        padding: 5rem 5% 0 5%;
+        margin: 5rem 5% 5rem 5%;
         position: relative;
-        overflow: hidden;
     }
 
     .card {
-        border: gray solid 4px;
-        background-color: rgba(125, 125, 125, 0.5);
+        border: var(--secondary-dark) solid 0.4rem;
+        background-color: var(--secondary);
         position: absolute;
         animation-duration: 700ms;
         animation-timing-function: ease-in-out;
@@ -215,7 +225,7 @@
 
         z-index: 5;
 
-        box-shadow: 10px 10px 10px rgba(128, 128, 128, 0.5);
+        box-shadow: 1rem 1rem 1rem var(--primary-dark);
     }
     
     .card img {
