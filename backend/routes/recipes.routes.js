@@ -8,6 +8,13 @@ module.exports = app => {
 	
 	/* START OF ROUTES */
 
+	Router.get('/', Controller.findAll)
+
+	Router.get('/tag', Controller.findAllWithTags)
+
+	Router.get('/query', Controller.findAllWithQuery)
+
+	Router.post('/', Controller.createRecipe)
 	
 	/* END OF ROUTES */
 

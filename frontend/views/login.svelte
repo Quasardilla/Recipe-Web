@@ -111,21 +111,19 @@
             password: document.getElementById('register-form').elements.password.value
         }
 
-        console.log('password works')
-
-        // fetch('https://kitchen.quasardilla.com/api/users/', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(newUser)
-        // }).then(response => {
-        //     if (response.status == 200) {
-        //         createAccount = false;
-        //     } else {
-        //         document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
-        //     }
-        // })
+        fetch('https://kitchen.quasardilla.com/api/users/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newUser)
+        }).then(response => {
+            if (response.status == 200) {
+                createAccount = false;
+            } else {
+                document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
+            }
+        })
     }
 
     function validateEmail() {
