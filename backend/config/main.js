@@ -30,4 +30,15 @@ fs.readdirSync(modelsDir).forEach(function(file) {
 	db[model] = require(modelsDir + "/" + file)(conn, Sequelize);
 });
 
+let tags = db['tags'];
+let recipes = db['recipes'];
+let tagmaps = db['tagmaps'];
+
+tags.belongsToMany(recipes, { through: tagmaps, });
+recipes.belongsToMany(tags, { through: tagmaps, });
+
+recipes.sync();
+tags.sync();
+tagmaps.sync();
+
 module.exports = db;

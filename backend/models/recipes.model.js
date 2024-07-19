@@ -2,8 +2,9 @@ module.exports = (conn, Sequelize) => {
 	const manager = require("../config/manager.config.js")(__filename);
 	return conn.define(manager.fileName, {
 
-	recipeUUID: {
+	UUID: {
 		type: Sequelize.STRING(36),
+		primaryKey: true,
 	},
 	owner: {
 		type: Sequelize.STRING(36),
@@ -15,13 +16,13 @@ module.exports = (conn, Sequelize) => {
 		type: Sequelize.STRING,
 	},
 	description: {
-		type: Sequelize.STRING,
+		type: Sequelize.STRING(2000),
 	},
 	ingredients: {
-		type: Sequelize.STRING,
+		type: Sequelize.TEXT,
 	},
 	steps: {
-		type: Sequelize.STRING,
+		type: Sequelize.TEXT('long'),
 	},
 	cooktime: {
 		type: Sequelize.INTEGER,
@@ -32,13 +33,18 @@ module.exports = (conn, Sequelize) => {
 	servings: {
 		type: Sequelize.INTEGER,
 	},
-	note: {
-		type: Sequelize.STRING(200),
+	notes: {
+		type: Sequelize.STRING(500),
 	},
 	saves: { //"favorites"
 		type: Sequelize.INTEGER,
 	},
-
+	// rating: {
+	// 	type: Sequelize.FLOAT,
+	// },
+	// ratingCount: {
+	// 	type: Sequelize.BIGINT,
+	// },
 	
 
 	},

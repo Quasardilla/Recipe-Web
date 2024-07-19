@@ -1,16 +1,18 @@
 <script>
-    let scripts = require('../sharedScripts.js');
+    import { onMount } from 'svelte';
+    import Icon from './Icon.svelte'
 
+    let scripts = require('../sharedScripts.js');
+    
     const KitchenIconDark = require('../assets/icons/KitchenFullTransparentWhite.svg');
     const KitchenIconLight = require('../assets/icons/KitchenFullTransparentBlack.svg');
-    const ProfileIcon = require('../assets/icons/Person.svg');
-    const ThemeIconDark = require('../assets/icons/Sun.svg');
-    const ThemeIconLight = require('../assets/icons/Moon.svg');
-
+    // const ProfileIcon = require('../assets/icons/Person.svg');
+    // const ThemeIconDark = require('../assets/icons/Sun.svg');
+    // const ThemeIconLight = require('../assets/icons/Moon.svg');
+    
     let iconUrl = 'https://kitchen.quasardilla.com/';
-
-    //IIFE to run as soon as it's defined, not waiting for page to load
-    (() => {
+    
+    onMount(async () => {
         verifyTheme()
         
         scripts.requestWithToken('https://kitchen.quasardilla.com/api/tokens/', 'GET')
@@ -23,7 +25,7 @@
                 iconUrl = 'https://kitchen.quasardilla.com/';
             }
         })
-    })()
+    });
 
     function revealLogoutModel() {
         document.querySelector('.modal').style.display = 'block';
@@ -33,8 +35,8 @@
         document.querySelector('.modal').style.display = 'none';
     }
 
-    function logout() {
-        scripts.request('https://kitchen.quasardilla.com/api/user-infos/logout', 'POST')
+    async function logout() {
+        await scripts.request('https://kitchen.quasardilla.com/api/user-infos/logout', 'POST')
         window.location.href = 'https://kitchen.quasardilla.com/';
     }
 
@@ -98,12 +100,14 @@
         </div>
         <div id="right-aligned-content">
             <button class="nav-button" id="theme-toggle" on:click={toggleTheme}>
-                <img alt="theme-icon" class="dark-icon" src={ThemeIconDark}>
-                <img alt="theme-icon" class="light-icon" src={ThemeIconLight}>
+                <!-- <img alt="theme-icon" class="dark-icon" src={ThemeIconDark}>
+                <img alt="theme-icon" class="light-icon" src={ThemeIconLight}> -->
+                <Icon class="light-icon" name='sun'/>
+                <Icon class="dark-icon" name='moon'/>
             </button>
             <div id="profile-content">
                 <button class="nav-button" id="profile">
-                    <img alt="profile-icon" src={ProfileIcon}>
+                    <Icon name='person'/>
                 </button>
                 <div id="profile-dropdown">
                     <div class="logged-out-item">
@@ -148,6 +152,8 @@
     #navBar {
         width: -webkit-fill-available;
         width: -moz-available;
+        width: fill-available;
+        
         height: 7rem;
         background-color: var(--primary-dark);
         padding: 0 2rem 0 2rem;
@@ -155,6 +161,7 @@
         display: flex;
         justify-content: space-between;
         position: fixed;
+        z-index: 100;
     }
 
     .nav-button {
@@ -170,7 +177,7 @@
         cursor: pointer;
     }
 
-    .nav-button img {
+    .nav-button :global(svg) {
         width: 100%;
         height: auto;
     }

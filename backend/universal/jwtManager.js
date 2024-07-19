@@ -14,10 +14,12 @@ exports.GenerateAccessToken = (user, fromRefreshToken) => {
         UUID: user.UUID,
         username: user.username,
         email: user.email,
-        origin: fromRefreshToken ? 1 : 0,
+        origin: !fromRefreshToken ? 1 : 0,
     }
+
+    console.log("generated from refresh token: " + fromRefreshToken)
     
-    return jwt.sign(userLite, jwtConfig.ACCESSSECRET, { expiresIn : "15m" });
+    return jwt.sign(userLite, jwtConfig.ACCESSSECRET, { expiresIn : "10m" });
 }
 
 exports.GenerateRefreshToken = (user) => {	
@@ -90,6 +92,8 @@ exports.VerifyRefreshToken = (token, req, res) => {
             else {
                 // If the token is valid, invalidate all other tokens in the same family
                 // then generate a new refresh token for the family and send it to the user
+                
+                console.log('refreshing refresh token')
                 jwt.verify(token, jwtConfig.REFRESHSECRET, (err, user) => {
                     if(err) {
                         console.log(err)
@@ -120,33 +124,36 @@ exports.VerifyRefreshToken = (token, req, res) => {
     return shouldAbort;
 }
 
+// Verifies JWT token
+// Returns true if token is invalid, meaning that the current process should abort
 exports.VerifyAccessToken = (req, res) => {	
     var cookies = cookie.parse(req.headers.cookie || '');
     const token = cookies.accessToken;
-    let shouldAbort = false;
+    const refreshToken = cookies.refreshToken;
 
-    if(token == null) {
+    if(token == null && refreshToken == null) {
         res.status(401).send({
             message: "User is not logged in!"
         });
-        shouldAbort = true;
-        return shouldAbort;
+        return true;
+    } else if (token == null) {
+        res.status(403).send({
+            message: "Token is invalid!"
+        });
+        return true;
     }
 
-
-    jwt.verify(token, jwtConfig.ACCESSSECRET, (err, user) => {
+    return jwt.verify(token, jwtConfig.ACCESSSECRET, (err, user) => {
         if(err) {
             res.status(403).send({
                 message: "Token is invalid!"
             });
-            shouldAbort = true;
-            return shouldAbort;
+            return true;
         }
 
         req.user = user;
+        return false;
     });
-
-    return shouldAbort;
 }
 
 exports.logoutUser = (req, res) => {
@@ -182,4 +189,10 @@ exports.logoutUser = (req, res) => {
             });
         })
     })
+}
+
+exports.deconstructToken = (req) => { 
+    var cookies = cookie.parse(req.headers.cookie || '');
+    const token = cookies.accessToken;
+    return jwt.decode(token);
 }

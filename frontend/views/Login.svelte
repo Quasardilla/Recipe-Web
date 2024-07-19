@@ -1,9 +1,9 @@
 <script>
     import { onMount } from 'svelte';
-    import Cancel from '../assets/icons/Cancel.svg';
-    import CancelDark from '../assets/icons/CancelDark.svg';
-    import Check from '../assets/icons/Check.svg';
-    import CheckDark from '../assets/icons/CheckDark.svg';
+    // import Cancel from '../assets/icons/Cancel.svg';
+    // import CancelDark from '../assets/icons/CancelDark.svg';
+    // import Check from '../assets/icons/Check.svg';
+    // import CheckDark from '../assets/icons/CheckDark.svg';
 
     let createAccount = false;
 
@@ -37,7 +37,6 @@
     })
 
     globalThis.googleButton = (data) => {
-        console.log("google button was pressed")
         console.log(createAccount ? "register" : "login")
 
         if(createAccount)
@@ -47,8 +46,10 @@
     }
 
     function submitLogin() {
+        localStorage.setItem('refreshingToken', 'false');
+
         let creds = {
-            username: document.getElementById('login-form').elements.username.value,
+            email: document.getElementById('login-form').elements.email.value,
             password: document.getElementById('login-form').elements.password.value
         }
 
@@ -63,7 +64,6 @@
                 try {
                     redirect = new URLSearchParams(window.location.search).get('redirect')
                 } catch (error) {
-                    console.log(error);
                     window.location.href = 'https://kitchen.quasardilla.com/#/home';
                     return;
                 }
@@ -78,6 +78,8 @@
     }
 
     function submitLoginGoogle(data) {
+        localStorage.setItem('refreshingToken', 'false');
+
         fetch('https://kitchen.quasardilla.com/api/user-infos/google', {
             method: 'POST',
             headers: {
@@ -89,13 +91,12 @@
                 try {
                     redirect = new URLSearchParams(window.location.search).get('redirect')
                 } catch (error) {
-                    console.log(error);
                     window.location.href = 'https://kitchen.quasardilla.com/#/home';
                     return;
                 }
                 window.location.href = 'https://kitchen.quasardilla.com' + redirect;
             } else {
-                document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
+                document.getElementById('validation-message').innerHTML = 'Invalid email or password!';
             }
         })
     }
@@ -120,8 +121,11 @@
         }).then(response => {
             if (response.status == 200) {
                 createAccount = false;
+                document.getElementById('login-form').elements.email.value = document.getElementById('register-form').elements.email.value
+                document.getElementById('login-form').elements.password.value = document.getElementById('register-form').elements.password.value
+                submitLogin();
             } else {
-                document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
+                document.getElementById('validation-message').innerHTML = 'Invalid email or password!';
             }
         })
     }
@@ -130,8 +134,9 @@
         let form = document.getElementById('register-form')
         let email = form.elements.email;
 
-        if(!email.checkValidity) {
+        if(!email.checkValidity()) {
             document.getElementById('reg-email-err').innerHTML = 'Please enter a valid email address!';
+            console.log('email isnt valid')
             return false;
         }
 
@@ -199,6 +204,7 @@
         }).then(response => {
             if (response.status == 200) {
                 createAccount = false;
+                submitLoginGoogle(data);
             } else {
                 document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
             }
@@ -213,7 +219,7 @@
             <h1 class="form-title">Login</h1>
             <p id="validation-message"></p>
             <div class="form-group">
-                <input type="text" name="username" autocomplete="off" placeholder="Username"/>
+                <input type="text" name="email" autocomplete="off" placeholder="Email"/>
             </div>
             <div class="form-group">
                 <input type="password" name="password" autocomplete="off" placeholder="Password"/>
@@ -252,10 +258,10 @@
 
                 <div id="password-checklist">
                     <p><img alt='' class="dark-icon-inline" src={charLength ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 8 characters long</p>
-                    <p><img alt='' class="dark-icon-inline" src={charUpper ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 upper-case letter</p>
-                    <p><img alt='' class="dark-icon-inline" src={charLower ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 lower-case letter</p>
-                    <p><img alt='' class="dark-icon-inline" src={charNumber ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 number</p>
-                    <p><img alt='' class="dark-icon-inline" src={charSpecial ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 1 special character</p>
+                    <p><img alt='' class="dark-icon-inline" src={charUpper ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charUpper ? Check : Cancel}/>At least 1 upper-case letter</p>
+                    <p><img alt='' class="dark-icon-inline" src={charLower ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLower ? Check : Cancel}/>At least 1 lower-case letter</p>
+                    <p><img alt='' class="dark-icon-inline" src={charNumber ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charNumber ? Check : Cancel}/>At least 1 number</p>
+                    <p><img alt='' class="dark-icon-inline" src={charSpecial ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charSpecial ? Check : Cancel}/>At least 1 special character</p>
                 </div>
             </div>
             <div class="form-group">
@@ -263,6 +269,9 @@
                 <p class="input-error" id="reg-pass-conf-err"></p>
             </div>
             <button type="submit" class="form-button"> Sign Up </button>
+
+            <p> or </p>
+
             <div class="google-button">
                 <div id="g-signup">
                 </div>

@@ -2,11 +2,13 @@ module.exports = (conn, Sequelize) => {
 	const manager = require("../config/manager.config.js")(__filename);
 	return conn.define(manager.fileName, {
 
-	tagUUID: {
+	UUID: {
         type: Sequelize.STRING(36),
+        primaryKey: true,
     },
     name: {
         type: Sequelize.STRING,
+        unique: true,
     },
 
 	},

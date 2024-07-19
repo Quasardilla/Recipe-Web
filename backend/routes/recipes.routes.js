@@ -8,13 +8,19 @@ module.exports = app => {
 	
 	/* START OF ROUTES */
 
+	Router.get('/:UUID', Controller.findOne)
+
 	Router.get('/', Controller.findAll)
 
-	Router.get('/tag', Controller.findAllWithTags)
+	// Router.get('/tag', Controller.findAllWithTags)
 
-	Router.get('/query', Controller.findAllWithQuery)
+	Router.get('/query', Controller.search)
 
 	Router.post('/', Controller.createRecipe)
+
+	// Router.post('/autocomplete/name', Controller.nameAutoComplete)
+
+	Router.post('/autocomplete/tag', Controller.tagAutoComplete)
 	
 	/* END OF ROUTES */
 

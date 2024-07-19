@@ -10,10 +10,8 @@ const Model = db[manager.fileName];
 const UserInfoModel = db["user-infos"]
 
 // Create and Save a new User
-exports.createUser = (req, res) => {	
-  console.log(req.body)
-
-  if(validateInput(req, res))
+exports.createUser = async (req, res) => {	
+  if(await validateInput(req, res))
     return;
   
   // Validate request
@@ -29,6 +27,7 @@ exports.createUser = (req, res) => {
         UUID: "" + uuidv4(),
         username: req.body.username,
         email: req.body.email,
+        saved: null,
     };
   
     // Save the User in the database
@@ -74,7 +73,7 @@ exports.createGoogleUser = async (req, res) => {
   
     let user = {
         UUID: userInfo.userId,
-        username: userInfo.username,
+        username: userInfo.name,
         email: userInfo.email,
     }
 
@@ -178,49 +177,46 @@ exports.deleteUser = async (req, res) => {
     }
   }
 
-exports.checkUsernameTaken = async (req, res) => {
+exports.checkEmailTaken = async (req, res) => {
 
     // Validate request
-    if (!req.body.username) {
+    if (!req.body.email) {
         res.status(400).send({
             message: "You're missing a field!"
         });
         return;
     }
 
-    Model.findOne({
-        where: {
-            username: req.body.username,
-        }
-    }).then(user => {
-        if(user == null) {
-            res.status(200).send({
-                message: "Username is available."
-            })
-        }
-        else {
-            res.status(400).send({
-                message: "Username is taken."
-            })
-        }
-    }).catch(err => {
-        res.status(500).send({
-            message: "Username is invalid."
+    emailTaken = checkEmailTaken(req.body.email)
+    if(emailTaken) {
+        res.status(400).send({
+            message: "Email is taken."
         });
-    });
+    } else {
+        res.status(200).send({
+            message: "Email is available."
+        });
+    }
   }
 
-function validateInput(req, res) {
+async function validateInput(req, res) {
     if(!validateUsername(req.body.username)) {
         res.status(400).send({
             message: "Username is invalid."
         });
-    }
-    else if(!validatePassword(req.body.password)) {
+        return true;
+    } else if(!validatePassword(req.body.password)) {
         res.status(400).send({
             message: "Password is invalid."
         });
+        return true;
+    } else if (await checkEmailTaken(req.body.email)) {
+        res.status(400).send({
+            message: "Email is taken."
+        });
+        return true;
     }
+    return false;
 }
 
 function validateUsername(username) {
@@ -239,4 +235,14 @@ function validatePassword(password) {
     }
 
     return true;
+}
+
+async function checkEmailTaken(email) {
+    let userEmail = await Model.findOne({
+        where: {
+            email: email,
+        }
+    })    
+
+    return userEmail != null
 }

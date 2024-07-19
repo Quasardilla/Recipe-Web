@@ -1,13 +1,16 @@
 <script>
-    import CardCarrousel from "../modules/cardCarrousel.svelte";
+    import CardCarrousel from "../modules/CardCarrousel.svelte";
     import placeholder from "../assets/imgs/KitchenPlaceHolder.svg";
     let scripts = require('../sharedScripts.js');
 
     (() => {
+        console.log('landing page redir')
         scripts.requestWithToken('https://kitchen.quasardilla.com/api/tokens/', 'GET')
         .then((response) => {
-            if(response.status == 200)
+            if(response.status == 200) {
+                console.log('landing page redir success')
                 window.location.href = 'https://kitchen.quasardilla.com/#/home';
+            }
         })
     })()
 </script>

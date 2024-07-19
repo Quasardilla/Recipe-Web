@@ -15,6 +15,15 @@ module.exports = (conn, Sequelize) => {
 		email: {
 			type: Sequelize.STRING
 		},
+		// profilePicture: {
+		// 	type: Sequelize.STRING
+		// },
+		// verified: {
+		// 	type: Sequelize.BOOLEAN
+		// },
+		saved: {
+			type: Sequelize.STRING
+		},
 
 	/* END OF MODEL */
 		

@@ -1,93 +1,149 @@
 const manager = require("../config/manager.config.js")(__filename);
 const db = require("../config/main.js");
-const { Op } = require("sequelize");
+const { Op, QueryTypes, or } = require("sequelize");
 const jwtManager = require("../universal/jwtManager.js");
 const cookie = require('cookie');
 const { v4: uuidv4 } = require('uuid');
+const { UUID } = require("sequelize");
+const _ = require("underscore");
 
 const Model = db[manager.fileName];
-const TagMap = db["tagmaps"];
-const Tag = db["tags"];
+const TagMaps = db["tagmaps"];
+const Tags = db["tags"];
+
+exports.findOne = (req, res) => {
+    let UUID = req.params.UUID;
+
+    if(UUID == undefined || typeof UUID != "string") {
+        res.status(400).send("Invalid UUID");
+        return
+    }
+
+    Model.findOne({
+        where: {
+            UUID: UUID
+        },
+        include: Tags
+    }).then(async (recipe) => {
+        if(recipe == null) {
+            res.status(404).send("Recipe not found");
+            return;
+        }
+        User = await db["users"]
+        User.findOne({
+            attributes: ['username'],
+            where: {
+                UUID: recipe.owner
+            }
+        }).then((userInfo) => {
+            res.status(200).send({recipe: recipe, user: userInfo});
+        })
+    })
+}
 
 exports.findAll = (req, res) => {
     let limit = req.body.limit;
     let offset = req.body.offset;
 
-    if(typeof limit != "number" || typeof offset != "number") {
-        res.status(400).send("Invalid limit or offset");
-        return;
-    } 
-
-    if(limit == undefined) limit = 10;
+    if(limit == undefined || typeof limit != "number") limit = 10;
     else if(limit > 100) limit = 100;
 
-    if(offset == undefined) offset = 0;
+    if(offset == undefined || typeof offset != "number") offset = 0;
     else if(offset < 0) offset = 0;
 
 
-    let tags = req.body.tags;
-
-    if(tags == undefined) {
-        res.status(400).send("Invalid tags");
-        return;
-    }
-
     Model.findAll({
-        attributes: [['recipeUUID', 'ID'], 'title', 'thumbnail', 'description', 'cooktime', 'preptime'],
         limit: limit,
         offset: offset,
+        include: Tags,
     }).then((result) => {
         res.status(200).send(result);
     })
 }
 
-exports.findAllWithQuery = (req, res) => {
+exports.findRandom = (req, res) => {
+
+}
+
+// Server doesn't know if user is using tags, query, or both
+exports.search = (req, res) => {
+    if(req.body.tags != undefined && req.body.query != undefined) {
+        findAllWithQueryAndTags(req, res);
+    } else if(req.body.tags == undefined && req.body.query != undefined) {
+        findAllWithQuery(req, res);
+    } else if(req.body.tags != undefined && req.body.query == undefined) {
+        findAllWithTags(req, res);
+    } else {
+        this.findAll(req, res);
+    }
+}
+
+
+async function findAllWithQuery(req, res) {
     res.status(404).send("Not implemented");
 }
 
-exports.findAllWithTags = (req, res) => {
-    console.log(req.body)
-
+async function findAllWithTags(req, res) {
     let tags = req.body.tags;
     let limit = req.body.limit;
     let offset = req.body.offset;
+    let sendIDs = req.body.formatAsIDs;
 
-    if(typeof limit != "number" || typeof offset != "number" || typeof tags != "object") {
-        res.status(400).send("Invalid limit or offset");
-        return;
-    } 
-
-    if(limit == undefined) limit = 10;
+    if(limit == undefined || typeof limit != "number") limit = 10;
     else if(limit > 100) limit = 100;
 
-    if(offset == undefined) offset = 0;
+    if(offset == undefined || typeof offset != "number") offset = 0;
     else if(offset < 0) offset = 0;
 
-    if(tags == undefined) {
+    if(tags == undefined ||  typeof tags != "object") {
         res.status(400).send("Invalid tags");
         return;
     }
 
-    Model.query(`
-    SELECT r.recipeUUID AS ID, r.title, r.thumbnail, r.description, r.cooktime, r.preptime
-    FROM recipes r, tagmaps tm, tags t
-    LIMIT :limit OFFSET :offset
-    WHERE tm.tagUUID = t.tagUUID
-    AND (t.NAME IN (:tags))
-    AND r.recipeUUID = tm.recipeUUID
-    GROUP BY r.recipeUUID
-    HAVING COUNT( t.id ) = :tagCount;
-    `, {
-        replacements: { tags: tags.toString(), tagCount: tags.length, limit: limit, offset: offset },
-        type: QueryTypes.SELECT
-    }).then((result) => {
+    recipeUUIDs = []
+
+    for(let i = 0; i < tags.length; i++) {
+        let UUIDs = []
+        let tag = await Tags.findOne({where: {name: tags[i]}})
+        recipes = await tag.getRecipes();
+        for(let j = 0; j < recipes.length; j++) {
+            UUIDs.push(recipes[j].UUID)
+        }
+        recipeUUIDs.push(UUIDs)
+    }
+
+    let result = _.intersection.apply(_, recipeUUIDs)
+
+    if(sendIDs) {
         res.status(200).send(result);
-    })
+        return;
+    } else {
+        let recipes = await Model.findAll({
+            where: {
+                UUID: {
+                    [Op.in]: result
+                }
+            },
+            limit: limit,
+            offset: offset,
+            include: Tags,
+        })
+        res.status(200).send(recipes);
+    }
+}
+
+async function findAllWithQueryAndTags(req, res) {
+
+}
+
+exports.findRandWithTags = async (req, res) => {
+
 }
 
 exports.createRecipe = (req, res) => {
     if(jwtManager.VerifyAccessToken(req, res))
         return;
+
     let title = req.body.title;
     let thumbnail = req.body.thumbnail; //not required
     let description = req.body.description;
@@ -97,41 +153,125 @@ exports.createRecipe = (req, res) => {
     let preptime = req.body.preptime;
     let servings = req.body.servings;
     let notes = req.body.notes; //not required
-    let tags = req.body.tags; //not required
+    let tags = req.body.tags;
+    let recipeUUID = uuidv4();
 
-    if(title == undefined || description == undefined || tags == undefined
+    if(title == undefined || description == undefined || tags == undefined || typeof tags != "object" || tags[0] == undefined
         || ingredients == undefined || steps == undefined || cooktime == undefined || preptime == undefined) {
         res.status(400).send("Invalid request body");
         return;
     }
 
-    Model.create({
-        recipeUUID: uuidv4(),
-        owner: user.id,
-        title: title,
-        thumbnail: thumbnail,
-        description: description,
-        ingredients: ingredients,
-        steps: steps,
-        cooktime: cooktime,
-        preptime: preptime,
-        saves: 0,
-    }).then((result) => {
+    user = jwtManager.deconstructToken(req)
+
+    Model.create(
+        {
+            UUID: recipeUUID,
+            owner: user.UUID,
+            title: title,
+            thumbnail: thumbnail,
+            description: description,
+            ingredients: JSON.stringify(ingredients),
+            steps: JSON.stringify(steps),
+            cooktime: cooktime,
+            preptime: preptime,
+
+            servings: servings,
+            notes: notes,
+
+            tags: tagsListToObjects(tags),
+
+            saves: 0,
+        },
+        {
+            include: Tags
+        }
+    )
+    .then((result) => {
         res.status(200).send(result);
-        let recipeUUID = result.recipeUUID;
-        for(let i = 0; i < tags.length; i++) {
-            Tag.create({
-                tagUUID: uuidv4(),
-                name: tags[i],
-            })
-            .then((result1) => {
-                TagMap.create({
-                    tagmapUUID: uuidv4(),
-                    recipeUUID: recipeUUID,
-                    tagUUID: result1.tagUUID,
-                })
+        manageTagMapRelationships(recipeUUID, tags);
+    })
+    .catch(err => {
+        if(err.original.code == "ER_DUP_ENTRY") {
+            recipe = Model.findByPk(recipeUUID)
+            .then((recipe) => {
+                res.status(200).send(recipe);
+                manageTagMapRelationships(recipeUUID, tags);
             })
         }
-        
+        else {
+            console.log(err)
+            res.status(500).send("Error creating recipe");
+        }
     })
+}
+
+function tagsListToObjects(tagsList) {
+    let tags = [];
+
+    for(let i = 0; i < tagsList.length; i++) {
+        tags.push({
+            UUID: uuidv4(),
+            name: tagsList[i].replace(' ', '_'),
+        })
+    }
+    return tags;
+}
+
+async function manageTagMapRelationships(recipeUUID, tags) {
+    recipe = await Model.findByPk("" + recipeUUID)
+
+    for(let i = 0; i < tags.length; i++) {
+        console.log(tags[i])
+        Tags.findOne({where: {name : tags[i]}})
+        .then((tag) => {
+            recipe.addTag(tag, { through: TagMaps })
+        })
+    }
+}
+
+exports.nameAutoComplete = (req, res) => {
+    let query = req.body.query;
+
+    if(query == undefined || typeof query != "string") {
+        res.status(400).send("Invalid query");
+        return;
+    }
+
+    Model.findAll({
+        where: {
+            title: {
+                [Op.like]: query + "%"
+            }
+        },
+        limit: 8
+    })
+
+}
+
+exports.tagAutoComplete = (req, res) => {
+    let tag = req.body.query;
+
+    console.log(tag)
+
+    if(tag == undefined || typeof tag != "string" || tag.length < 1) {
+        res.status(400).send("Invalid query");
+        return;
+    }
+
+    Tags.findAll({
+        where: {
+            name: {
+                [Op.like]: tag + "%"
+            }
+        },
+        limit: 8
+    })
+    .then((tags) => {
+        res.status(200).send(tags);
+    })
+    .catch(err => {
+        res.status(500).send("Error getting tags");
+    })
+
 }

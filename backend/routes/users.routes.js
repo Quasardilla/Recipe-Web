@@ -12,7 +12,7 @@ module.exports = app => {
 	
 	Router.post("/google", Controller.createGoogleUser);
 
-    Router.post("/taken/", Controller.checkUsernameTaken);
+    Router.post("/taken/", Controller.checkEmailTaken);
 
 	Router.delete("/", Controller.deleteUser)
 	

@@ -10,11 +10,9 @@ const Model = db[manager.fileName];
 const UserModel = db["users"];
 
 // Verify User Information (username and password)
-exports.validateUser = (req, res) => {	
-  console.log(req.body)
-  
+exports.validateUser = (req, res) => {	 
     // Validate request
-    if (!req.body.username || !req.body.password) {
+    if (!req.body.email || !req.body.password) {
       res.status(400).send({
         message: "You're missing a field!"
       });
@@ -22,10 +20,9 @@ exports.validateUser = (req, res) => {
     }
 
     // Verify Request
-
     UserModel.findOne({
         where: {
-            username: req.body.username,
+            email: req.body.email,
         }
     }).then(async user => {
         let usercreds = await Model.findOne({
@@ -36,7 +33,7 @@ exports.validateUser = (req, res) => {
 
         if(usercreds == null) {
             res.status(400).send({
-                message: "Username does not exist. Try signing in with google?"
+                message: "Email wasn't found. Try signing in with google?"
             })
             return;
         }
@@ -47,6 +44,7 @@ exports.validateUser = (req, res) => {
                 secure: true,
                 maxAge: 60 * 15 // 15 minutes
             }));
+
             res.cookie(cookie.serialize('refreshToken', jwtManager.GenerateRefreshToken(user), {
                 httpOnly: true,
                 secure: true,
@@ -65,7 +63,7 @@ exports.validateUser = (req, res) => {
     }).catch(err => {
         console.log(err)
         res.status(500).send({
-            message: "Username is invalid."
+            message: "Email is invalid."
         });
     });
   

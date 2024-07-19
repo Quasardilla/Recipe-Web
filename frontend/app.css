@@ -20,6 +20,10 @@
     --text-color: #fff;
 }
 
+* {
+    font-family: AvenirLocal, Avenir, Helvetica, Arial, sans-serif;
+}
+
 body {
     font-size: 1.6rem;
     margin: 0;
@@ -32,6 +36,10 @@ body {
 
 .dark-theme .dark-icon {
     display: block;
+}
+
+.dark-theme .dark-icon svg {
+    fill: var(--)
 }
 
 .dark-theme .dark-icon-inline {
@@ -54,3 +62,25 @@ body {
     display: block;
 }
 
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-center {
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-space-between {
+    justify-content: space-between;
+}
+
+.hidden {
+    display: none;
+}

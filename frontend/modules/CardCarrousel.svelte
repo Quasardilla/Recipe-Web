@@ -1,9 +1,9 @@
 <script defer>
     import { onMount } from "svelte";
-    import LeftArrowDark from '../assets/icons/ArrowBackDark.svg'
-    import LeftArrowLight from '../assets/icons/ArrowBack.svg'
-    import RightArrowDark from '../assets/icons/ArrowForwardDark.svg'
-    import RightArrowLight from '../assets/icons/ArrowForward.svg'
+    // import LeftArrowDark from '../assets/icons/ArrowBackDark.svg'
+    // import LeftArrowLight from '../assets/icons/ArrowBack.svg'
+    // import RightArrowDark from '../assets/icons/ArrowForwardDark.svg'
+    // import RightArrowLight from '../assets/icons/ArrowForward.svg'
     export let cards;
 
     let card1;
@@ -142,8 +142,8 @@
 <main>
     <div id="card-container">
         <button class="nav-button" id="left-nav-button" on:click={rotateLeft}>
-            <img alt="left arrow" class="dark-icon" src={LeftArrowDark}/>
-            <img alt="left arrow" class="light-icon" src={LeftArrowLight}/>
+            <!-- <img alt="left arrow" class="dark-icon" src={LeftArrowDark}/>
+            <img alt="left arrow" class="light-icon" src={LeftArrowLight}/> -->
         </button>
         
         <!--Right card (off-screen)-->
@@ -168,8 +168,8 @@
         </div>
 
         <button class="nav-button" id="right-nav-button" on:click={rotateRight}>
-            <img alt="right arrow" class="dark-icon" src={RightArrowDark}/>
-            <img alt="right arrow" class="light-icon" src={RightArrowLight}/>
+            <!-- <img alt="right arrow" class="dark-icon" src={RightArrowDark}/>
+            <img alt="right arrow" class="light-icon" src={RightArrowLight}/> -->
         </button>
     </div>
 
