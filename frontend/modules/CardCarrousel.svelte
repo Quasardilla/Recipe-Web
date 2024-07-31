@@ -1,5 +1,6 @@
 <script defer>
     import { onMount } from "svelte";
+  import Icon from "./Icon.svelte";
     // import LeftArrowDark from '../assets/icons/ArrowBackDark.svg'
     // import LeftArrowLight from '../assets/icons/ArrowBack.svg'
     // import RightArrowDark from '../assets/icons/ArrowForwardDark.svg'
@@ -142,8 +143,7 @@
 <main>
     <div id="card-container">
         <button class="nav-button" id="left-nav-button" on:click={rotateLeft}>
-            <!-- <img alt="left arrow" class="dark-icon" src={LeftArrowDark}/>
-            <img alt="left arrow" class="light-icon" src={LeftArrowLight}/> -->
+            <Icon name="arrow-left"/>
         </button>
         
         <!--Right card (off-screen)-->
@@ -168,6 +168,7 @@
         </div>
 
         <button class="nav-button" id="right-nav-button" on:click={rotateRight}>
+            <Icon name="arrow-right"/>
             <!-- <img alt="right arrow" class="dark-icon" src={RightArrowDark}/>
             <img alt="right arrow" class="light-icon" src={RightArrowLight}/> -->
         </button>
@@ -187,7 +188,7 @@
         justify-content: center;
         background-color: var(--secondary-dark);
         border: var(--secondary) solid 0.2rem;
-        opacity: 0.3;
+        opacity: 0.5;
         border-radius: 1000rem;
         z-index: 10;
 
@@ -201,10 +202,12 @@
         cursor: pointer;
     }
 
-    .nav-button img {
+    .nav-button :global(.icon) {
         margin: auto;
         width: 100%;
+        height: auto;
         transition: all 300ms ease-in-out;
+        fill: var(--primary);
     }
 
     #card-container {

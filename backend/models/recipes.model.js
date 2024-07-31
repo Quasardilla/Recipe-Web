@@ -16,7 +16,7 @@ module.exports = (conn, Sequelize) => {
 		type: Sequelize.STRING,
 	},
 	description: {
-		type: Sequelize.STRING(2000),
+		type: Sequelize.STRING(512),
 	},
 	ingredients: {
 		type: Sequelize.TEXT,
@@ -34,7 +34,7 @@ module.exports = (conn, Sequelize) => {
 		type: Sequelize.INTEGER,
 	},
 	notes: {
-		type: Sequelize.STRING(500),
+		type: Sequelize.STRING(512),
 	},
 	saves: { //"favorites"
 		type: Sequelize.INTEGER,

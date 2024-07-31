@@ -66,11 +66,12 @@
         document.body.classList.remove("dark-theme");
         document.querySelector(':root').style.setProperty('--primary', '#fff')
         document.querySelector(':root').style.setProperty('--primary-dark', '#ddd')
-        document.querySelector(':root').style.setProperty('--secondary', '#a7a7b5')
-        document.querySelector(':root').style.setProperty('--secondary-dark', '#7f7f8a')
-        document.querySelector(':root').style.setProperty('--tertiary', '#b16af0')
+        document.querySelector(':root').style.setProperty('--secondary', '#bdbdc7')
+        document.querySelector(':root').style.setProperty('--secondary-dark', '#acacb9')
+        document.querySelector(':root').style.setProperty('--tertiary', '#622aac')
         document.querySelector(':root').style.setProperty('--tertiary-dark', '#63319e')
         document.querySelector(':root').style.setProperty('--text-color', '#000')
+        document.querySelector(':root').style.setProperty('--text-color-dark', '#4e4d56')
     }
 
     function darkColors() {
@@ -78,11 +79,12 @@
         document.body.classList.remove("light-theme");
         document.querySelector(':root').style.setProperty('--primary', '#57585e')
         document.querySelector(':root').style.setProperty('--primary-dark', '#44454a')
-        document.querySelector(':root').style.setProperty('--secondary', '#a7a7b5')
+        document.querySelector(':root').style.setProperty('--secondary', '#6b6b80')
         document.querySelector(':root').style.setProperty('--secondary-dark', '#7f7f8a')
-        document.querySelector(':root').style.setProperty('--tertiary', '#b16af0')
+        document.querySelector(':root').style.setProperty('--tertiary', '#622aac')
         document.querySelector(':root').style.setProperty('--tertiary-dark', '#63319e')
         document.querySelector(':root').style.setProperty('--text-color', '#fff')
+        document.querySelector(':root').style.setProperty('--text-color-dark', '#bbbcc3')
     }
 </script>
 
@@ -106,10 +108,10 @@
                 <Icon class="dark-icon" name='moon'/>
             </button>
             <div id="profile-content">
-                <button class="nav-button" id="profile">
+                <button class="nav-button" id="profile" on:click={(event) => {console.log(event)}}>
                     <Icon name='person'/>
                 </button>
-                <div id="profile-dropdown">
+                <div id="profile-dropdown" tabindex="-1">
                     <div class="logged-out-item">
                         <h3>Log in or create an account</h3>
                         <a href="/#/auth/user/login">
@@ -166,11 +168,11 @@
 
     .nav-button {
         width: 5rem;
-        height: 5rem;
-        border-radius: 1rem;
-        border: 0.2rem solid var(--secondary-dark);
+        height: 100%;
         background-color: var(--primary-dark);
         margin: 0 1rem 0 1rem;
+        padding: none;
+        border: none;
     }
 
     .nav-button:hover {
@@ -180,9 +182,13 @@
     .nav-button :global(svg) {
         width: 100%;
         height: auto;
+        padding: 0.5rem;
+        border-radius: 1rem;
+        border: 0.2rem solid var(--secondary-dark);
     }
 
     #right-aligned-content {
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: flex-end;
@@ -201,11 +207,11 @@
     }
     
 
-    #profile-content:hover #profile-dropdown, #profile-content:active #profile-dropdown {
+    #profile-content:hover #profile-dropdown, #profile-content:active #profile-dropdown, #profile-content:focus #profile-dropdown {
         display: flex;
-        border-top-right-radius: 0;
+        margin: 1rem 0 0 0;
         top: 6rem;
-        right: 3rem;
+        right: 2rem;
     }
 
     #profile-dropdown h3 {
@@ -222,9 +228,22 @@
         width: 100%;
         cursor: pointer;
         border: none;
+        border-bottom: 0.2rem solid var(--secondary-dark);
+        border-radius: 0;
         color: var(--text-color);
         background-color: var(--primary);
         font-family: var(--font-family);
+    }
+
+    #profile-dropdown button:first-of-type {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+
+    #profile-dropdown button:last-child {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+        border-bottom: none;
     }
 
     #profile-dropdown #login-button {
@@ -250,9 +269,6 @@
     }
 
     #profile-content:hover #profile, #profile-content:active #profile {
-        border-bottom: none;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
         cursor: pointer;
     }
 

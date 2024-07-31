@@ -103,14 +103,12 @@ function loginRedirect() {
 
 export async function refreshTagAutoComplete(event) {
     let tags = event.srcElement.value.split(' ');
-    // let tags = tags.split(' ');
     let suggestionContainer = document.getElementById('tagSuggestions')
 
     if(!tags || tags[tags.length - 1].length < 1) {
         suggestionContainer.innerHTML = '';
         return;
     }
-
 
     request('https://kitchen.quasardilla.com/api/recipes/autocomplete/tag/', 'POST', {query: tags[tags.length - 1]})
     .then(async (response) => {
@@ -142,6 +140,14 @@ export async function refreshTagAutoComplete(event) {
     })
 }
 
+export async function sanitizeRecipeData(string) {
+    return escapeInput(await onlyAlphaNumericAndChars(string));
+}
+
+export async function sanitizeTagData(string) {
+    return escapeTag(string);
+}
+
 export async function escapeInput(string) {
     var entityMap = {
         '&': '&amp;',
@@ -157,4 +163,53 @@ export async function escapeInput(string) {
     return String(string).replace(/[&<>"'`=\/]/g, function (s) {
         return entityMap[s];
     });
+}
+
+export async function onlyAlphaNumericAndChars(string) {
+    return String(string).replace(/[^a-zA-Z0-9 -._~!@#$%^&*()+="']/g, '');
+}
+
+export async function onlyAlphaNumericAndAcceptedChars(string) {
+    return String(string).replace(/[^a-zA-Z0-9 -]/g, '');
+}
+
+export async function onlyAlphaNumeric(string) {
+    return String(string).replace(/[^a-zA-Z0-9]/g, '');
+}
+
+export async function onlyAlpha(string) {
+    return String(string).replace(/[^a-zA-Z]/g, '');
+}
+
+export async function escapeTag(string) {
+    str = String(string).replace(/[^a-z- ]/g, '');
+    tags = str.split(' ');
+    for(let i = 0; i < tags.length; i++) {
+        tags[i] = tags[i].toLowerCase();
+        
+        if (tag = '') {
+            tags.splice(tags.indexOf(tag), 1);
+        }
+    }
+    return tags.join(' ');
+}
+
+export async function onlyNumeric(string) {
+    return String(string).replace(/[^0-9]/g, '');
+}
+
+export async function validateTags(string) {
+    tags = String(string).split(' ');
+
+    if(tags.length > 50) {
+        return "There are too many tags! There can only be 50 tags per recipe.";
+    }
+
+    tags.forEach(tag => {
+        if(tag.length > 32) {
+            return "A tag is too long! Tags can only be 32 characters long.";
+        }
+    });
+
+    return;
 }

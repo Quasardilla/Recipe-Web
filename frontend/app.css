@@ -12,22 +12,36 @@
 
     --primary: #57585e;
     --primary-dark: #44454a;
-    --secondary: #a7a7b5;
+    --secondary: #6b6b80;
     --secondary-dark: #7f7f8a;
     --tertiary: #b16af0;
-    --tertiary-dark: #63319e;
+    --tertiary-dark: #622aac;
 
     --text-color: #fff;
+    --text-color-dark: #999;
+
+    --primary-text-color: #fff;
 }
 
 * {
     font-family: AvenirLocal, Avenir, Helvetica, Arial, sans-serif;
+    color: var(--text-color);
 }
 
 body {
     font-size: 1.6rem;
     margin: 0;
-    background-color: var(--primary)
+    background-color: var(--primary-dark);
+}
+
+.icon {
+    fill: var(--secondary-dark);
+    width: auto;
+    height: 100%;
+}
+
+.icon-inline  {
+    display: inline-block;
 }
 
 .light-icon, .dark-icon, .light-icon-inline, .dark-icon-inline {
@@ -38,20 +52,8 @@ body {
     display: block;
 }
 
-.dark-theme .dark-icon svg {
-    fill: var(--)
-}
-
-.dark-theme .dark-icon-inline {
-    display: inline-block;
-}
-
 .light-theme .light-icon {
     display: block;
-}
-
-.light-theme .light-icon-inline {
-    display: inline-block;
 }
 
 .logged-in-item, .logged-in .logged-out-item {
@@ -83,4 +85,32 @@ body {
 
 .hidden {
     display: none;
+}
+
+input, textarea {
+    padding: 1rem;
+    border: 1px solid var(--secondary);
+    border-radius: 5px;
+    background-color: var(--secondary-dark);
+    color: var(--text-color);
+    font-size: 1.5rem;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-color-dark);
+}
+
+button, input[type="button"] {
+    padding: 0.5rem;
+    border: 0.2rem solid var(--secondary);
+    border-radius: 5px;
+    background-color: var(--secondary-dark);
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.primary-button {
+    background-color: var(--tertiary);
+    color: var(--primary-text-color);
 }

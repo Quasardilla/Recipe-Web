@@ -1,5 +1,7 @@
 <script>
+    import Icon from '../modules/Icon.svelte'
     import { onMount } from 'svelte';
+    import scripts from '../sharedScripts.js';
     // import Cancel from '../assets/icons/Cancel.svg';
     // import CancelDark from '../assets/icons/CancelDark.svg';
     // import Check from '../assets/icons/Check.svg';
@@ -37,8 +39,6 @@
     })
 
     globalThis.googleButton = (data) => {
-        console.log(createAccount ? "register" : "login")
-
         if(createAccount)
             submitRegisterGoogle(data)
         else
@@ -61,13 +61,17 @@
             body: JSON.stringify(creds)
         }).then(response => {
             if (response.status == 200) {
+                let redirect;
+                let hash = window.location.hash;
+                let params = new URLSearchParams(hash.substring(hash.indexOf('?')));
                 try {
-                    redirect = new URLSearchParams(window.location.search).get('redirect')
+                    redirect = params.get('redirect')
                 } catch (error) {
+                    console.log(error)
                     window.location.href = 'https://kitchen.quasardilla.com/#/home';
                     return;
                 }
-                window.location.href = 'https://kitchen.quasardilla.com' + redirect;
+                window.location.href = 'https://kitchen.quasardilla.com/' + redirect;
             } else {
                 document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
             }
@@ -88,16 +92,23 @@
             body: JSON.stringify(data)
         }).then(response => {
             if (response.status == 200) {
+                let redirect;
+                let hash = window.location.hash;
+                let params = new URLSearchParams(hash.substring(hash.indexOf('?')));
                 try {
-                    redirect = new URLSearchParams(window.location.search).get('redirect')
+                    redirect = params.get('redirect')
                 } catch (error) {
+                    console.log(error)
                     window.location.href = 'https://kitchen.quasardilla.com/#/home';
                     return;
                 }
-                window.location.href = 'https://kitchen.quasardilla.com' + redirect;
+                window.location.href = 'https://kitchen.quasardilla.com/' + redirect;
             } else {
-                document.getElementById('validation-message').innerHTML = 'Invalid email or password!';
+                document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
             }
+        })
+        .catch(error => {
+            console.log(error);
         })
     }
 
@@ -106,10 +117,16 @@
             return;
         }
 
+        let email = document.getElementById('register-form').elements.email.value
+        let username = document.getElementById('register-form').elements.username.value
+        let password = document.getElementById('register-form').elements.password.value
+
+        username = scripts.sanitizeRecipeData(username)
+
         let newUser = {
-            email: document.getElementById('register-form').elements.email.value,
-            username: document.getElementById('register-form').elements.username.value,
-            password: document.getElementById('register-form').elements.password.value
+            email: email,
+            username: username,
+            password: password
         }
 
         fetch('https://kitchen.quasardilla.com/api/users/', {
@@ -174,6 +191,8 @@
         !password.match(/\d/g) ? charNumber = false : charNumber = true;
         !password.match(/\W/g) ? charSpecial = false : charSpecial = true;
 
+        console.log(charLength, charLower, charUpper, charNumber, charSpecial)
+
         if(charLength && charLower && charUpper && charNumber && charSpecial) {
             return true;
         }
@@ -224,7 +243,7 @@
             <div class="form-group">
                 <input type="password" name="password" autocomplete="off" placeholder="Password"/>
             </div>
-            <button class="form-button" type="submit"> Log In </button>
+            <button class="form-button primary-button" type="submit"> Log In </button>
             <div class="google-button">
                 <div id="g-signin"></div>
             </div>
@@ -257,11 +276,11 @@
                 <p class="input-error" id="reg-pass-err"></p>
 
                 <div id="password-checklist">
-                    <p><img alt='' class="dark-icon-inline" src={charLength ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLength ? Check : Cancel}/>At least 8 characters long</p>
-                    <p><img alt='' class="dark-icon-inline" src={charUpper ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charUpper ? Check : Cancel}/>At least 1 upper-case letter</p>
-                    <p><img alt='' class="dark-icon-inline" src={charLower ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charLower ? Check : Cancel}/>At least 1 lower-case letter</p>
-                    <p><img alt='' class="dark-icon-inline" src={charNumber ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charNumber ? Check : Cancel}/>At least 1 number</p>
-                    <p><img alt='' class="dark-icon-inline" src={charSpecial ? CheckDark : CancelDark}/><img alt='' class="light-icon-inline" src={charSpecial ? Check : Cancel}/>At least 1 special character</p>
+                    <p><Icon name={charLength ? 'check' : 'cancel'} class="icon-inline"/>At least 8 characters long</p>
+                    <p><Icon name={charUpper ? 'check' : 'cancel'} class="icon-inline"/>At least 1 upper-case letter</p>
+                    <p><Icon name={charLower ? 'check' : 'cancel'} class="icon-inline"/>At least 1 lower-case letter</p>
+                    <p><Icon name={charNumber ? 'check' : 'cancel'} class="icon-inline"/>At least 1 number</p>
+                    <p><Icon name={charSpecial ? 'check' : 'cancel'} class="icon-inline"/>At least 1 special character</p>
                 </div>
             </div>
             <div class="form-group">
@@ -288,20 +307,31 @@
     #form-container {
         display: flex;
         justify-content: center;
-        padding: 13rem 0 2rem 0;
+        padding: 13rem 5rem 2rem 5rem;
         text-align: center;
     }
     
     #form-container form {
-        background-color: var(--primary-dark);
+        background-color: var(--primary);
         border: 2px solid var(--secondary-dark);
+        border-radius: 1rem;
         padding: 2rem;
-        width: 50rem;
+        width: 40rem;
     }
 
     #form-container form .form-title {
         color: var(--text-color);
     }
+
+    #form-container form a {
+        color: var(--text-color);
+        text-decoration-color: var(--text-color);
+    }
+
+    /* #form-container form a .form-text {
+        color: var(--text-color);
+        text-decoration-color: var(--text-color);
+    } */
 
     .form-group input {
         font-family: AvenirLocal, Avenir, Helvetica, Arial, sans-serif;
@@ -325,8 +355,6 @@
         margin: 1rem 0;
         border: 2px solid rgba(0, 0, 0, 0.2);
         font-size: 2rem;
-        color: var(--text-color);
-        background-color: var(--tertiary);
         border-color: var(--secondary-dark);
         transition: ease-in-out 200ms;
     }
@@ -351,9 +379,22 @@
         color: var(--text-color);
     }
 
-    #password-checklist img {
+    #password-checklist p {
+        margin: 0.5rem 0;
+    }
+
+    #password-checklist :global(.icon) {
         height: 3rem;
+        margin-right: 1rem;
         width: auto;
         vertical-align: middle;
+    }
+
+    :global(.light-theme) #password-checklist :global(.check) {
+        fill: var(--tertiary-dark);
+    }
+
+    :global(.dark-theme) #password-checklist :global(.check) {
+        fill: var(--tertiary);
     }
 </style>
