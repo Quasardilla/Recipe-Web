@@ -19,7 +19,7 @@ exports.GenerateAccessToken = (user, fromRefreshToken) => {
 
     console.log("generated from refresh token: " + fromRefreshToken)
     
-    return jwt.sign(userLite, jwtConfig.ACCESSSECRET, { expiresIn : "10m" });
+    return jwt.sign(userLite, jwtConfig.ACCESSSECRET, { expiresIn : "15m" });
 }
 
 exports.GenerateRefreshToken = (user) => {	
@@ -40,7 +40,7 @@ exports.GenerateRefreshToken = (user) => {
             Model.update({valid: false}, {
                 where: {
                     familyUUID: token.familyUUID,
-                }
+                }   
             })
             Model.create({UUID: user.UUID, token: refreshToken, valid: true, familyUUID: token.familyUUID})
         }
@@ -58,22 +58,27 @@ exports.GenerateRefreshToken = (user) => {
 // refresh tokens in the same family, and the user must login again. This is to stop malicious users from using a refresh token
 // multiple times, and allows for quick revocation of stolen refresh tokens.
 
-exports.VerifyRefreshToken = (token, req, res) => {	
+exports.VerifyRefreshToken = (refresh_token, req, res) => {	
     let shouldAbort = false;
 
     Model.findOne({
         where: {
-            token : token,
+            token : refresh_token,
         }}).then(async data => {
             if(!data) {
                 res.status(401).send({
-                    message: "Invalid Refresh Token."
+                    message: "Invalid Refresh Token. (NOT FOUND)"
                 })
                 shouldAbort = true;
                 return shouldAbort;
             }
             else if(!data.valid) {
                 // If the token is invalid, delete all tokens in the same family
+
+                console.log("----------------- REFRESH TOKEN INVALID -----------------")
+
+                console.log(data)
+
                 res.clearCookie('accessToken');
                 res.clearCookie('refreshToken');
 
@@ -83,7 +88,7 @@ exports.VerifyRefreshToken = (token, req, res) => {
                     }
                 }).then(async () => {
                     res.status(401).send({
-                        message: "Invalid Refresh Token."
+                        message: "Invalid Refresh Token. (EXPIRED)"
                     })
                     shouldAbort = true;
                     return shouldAbort;
@@ -94,7 +99,7 @@ exports.VerifyRefreshToken = (token, req, res) => {
                 // then generate a new refresh token for the family and send it to the user
                 
                 console.log('refreshing refresh token')
-                jwt.verify(token, jwtConfig.REFRESHSECRET, (err, user) => {
+                jwt.verify(refresh_token, jwtConfig.REFRESHSECRET, (err, user) => {
                     if(err) {
                         console.log(err)
                         res.status(403).send({
@@ -104,19 +109,24 @@ exports.VerifyRefreshToken = (token, req, res) => {
                         return shouldAbort;
                     }
 
-                    res.cookie(cookie.serialize('accessToken', this.GenerateAccessToken(user, true), {
+                    res.cookie('ck_accessTok', exports.GenerateAccessToken(user, false), {
                         httpOnly: true,
                         secure: true,
-                        maxAge: 60 * 15 // 15 minutes
-                    }));
-                    res.cookie(cookie.serialize('refreshToken', this.GenerateRefreshToken(user), {
+                        maxAge: 1000 * 60 * 15 // 15 minutes
+                    });
+                    res.cookie('ck_refreshTok', exports.GenerateRefreshToken(user), {
                         httpOnly: true,
                         secure: true,
-                        maxAge: 60 * 60 * 24 * 5 // 5 days
-                    }));
+                        maxAge: 1000 * 60 * 60 * 24 * 5 // 5 days
+                    });
+
+                    
                     res.status(200).send({
                         message: "Refresh Token regenerated."
                     })
+
+                    console.log("refreshed tokens for user")
+                    
                 })
             }
         })
@@ -128,8 +138,8 @@ exports.VerifyRefreshToken = (token, req, res) => {
 // Returns true if token is invalid, meaning that the current process should abort
 exports.VerifyAccessToken = (req, res) => {	
     var cookies = cookie.parse(req.headers.cookie || '');
-    const token = cookies.accessToken;
-    const refreshToken = cookies.refreshToken;
+    const token = cookies.ck_accessTok;
+    const refreshToken = cookies.ck_refreshTok;
 
     if(token == null && refreshToken == null) {
         res.status(401).send({
@@ -138,7 +148,7 @@ exports.VerifyAccessToken = (req, res) => {
         return true;
     } else if (token == null) {
         res.status(403).send({
-            message: "Token is invalid!"
+            message: "Token is invalid (NULL)!"
         });
         return true;
     }
@@ -146,7 +156,7 @@ exports.VerifyAccessToken = (req, res) => {
     return jwt.verify(token, jwtConfig.ACCESSSECRET, (err, user) => {
         if(err) {
             res.status(403).send({
-                message: "Token is invalid!"
+                message: "Token is invalid (INVALID)!"
             });
             return true;
         }
@@ -193,6 +203,6 @@ exports.logoutUser = (req, res) => {
 
 exports.deconstructToken = (req) => { 
     var cookies = cookie.parse(req.headers.cookie || '');
-    const token = cookies.accessToken;
+    const token = cookies.ck_accessTok;
     return jwt.decode(token);
 }

@@ -1,3 +1,202 @@
+/* Recipe Units */
+
+export let standardUnits = {
+    fluid: [{
+        name: 'Fluid Ounce',
+        abbreviation: 'fl oz',
+        toCups: 8,
+        toLiters: 35.19508,
+    },
+    {
+        name: 'Pint',
+        abbreviation: 'pt',
+        toCups: 0.5,
+        toLiters: 1.759754,
+    },
+    {
+        name: 'Quart',
+        abbreviation: 'qt',
+        toCups: 0.25,
+        toLiters: 0.8798771,
+    },
+    {
+        name: 'Gallon',
+        abbreviation: 'gal',
+        toCups: 0.0625,
+        toLiters: 0.2199693,
+    }],
+    dry: [{
+        name: 'Cup',
+        abbreviation: 'C',
+        toCups: 1,
+        toLiters: 3.519508,
+    },
+    {
+        name: 'Tablespoon',
+        abbreviation: 'Tbsp',
+        toCups: 16,
+        toLiters: 56.31213,
+    },
+    {
+        name: 'Teaspoon',
+        abbreviation: 'tsp',
+        toCups: 48,
+        toLiters: 168.9364,
+    }],
+    weight: [{
+        name: 'Ounce',
+        abbreviation: 'oz',
+        toPounds: 16,
+        toKilograms: 35.27396,
+    },
+    {
+        name: 'Pound',
+        abbreviation: 'lb',
+        toPounds: 1,
+        toKilograms: 2.204623,
+    }],
+    estimate: [{
+        name: 'Pinch',
+        abbreviation: 'pinch',
+    },
+    {
+        name: 'Dash',
+        abbreviation: 'dash',
+    },
+    {
+        name: 'Handful',
+        abbreviation: 'handful',
+    },
+    {
+        name: 'Sprinkle',
+        abbreviation: 'sprinkle',
+    },
+    {
+        name: 'Dollop',
+        abbreviation: 'dollop',
+    },
+    {
+        name: 'Clove',
+        abbreviation: 'clove',
+    },
+    {
+        name: 'Piece',
+        abbreviation: 'piece',
+    },
+    {
+        name: 'Slice',
+        abbreviation: 'slice',
+    },
+    {
+        name: 'Leaf',
+        abbreviation: 'leaf',
+    },
+    {
+        name: 'Stalk',
+        abbreviation: 'stalk',
+    },
+    {
+        name: 'Bunch',
+        abbreviation: 'bunch',
+    },
+    {
+        name: 'Head',
+        abbreviation: 'head',
+    }],
+};
+
+export let metricUnits = {
+    fluid: [{
+        name: 'Milliliter',
+        abbreviation: 'mL',
+        toLiters: 1000,
+        toCups: 236.5882,
+    },
+    {
+        name: 'Liter',
+        abbreviation: 'L',
+        toLiters: 1,
+        toCups: 0.2365882, 
+    }],
+    dry: [{
+        name: 'Milliliter',
+        abbreviation: 'mL',
+        toLiters: 1000,
+        toCups: 236.5882,
+    },
+    {
+        name: 'Tablespoon',
+        abbreviation: 'Tbsp',
+        toLiters: 66.6667,
+        toCups: 16,
+    }],
+    weight: [{
+            name: 'Gram',
+            abbreviation: 'g',
+            toKilograms: 1000,
+            toPounds: 454,
+    },
+    {
+            name: 'Kilogram',
+            abbreviation: 'kg',
+            toKilograms: 1,
+            toPounds: 0.454,
+    }],
+    estimate: [{
+        name: 'Pinch',
+        abbreviation: 'pinch',
+    },
+    {
+        name: 'Dash',
+        abbreviation: 'dash',
+    },
+    {
+        name: 'Handful',
+        abbreviation: 'handful',
+    },
+    {
+        name: 'Sprinkle',
+        abbreviation: 'sprinkle',
+    },
+    {
+        name: 'Dollop',
+        abbreviation: 'dollop',
+    },
+    {
+        name: 'Clove',
+        abbreviation: 'clove',
+    },
+    {
+        name: 'Piece',
+        abbreviation: 'piece',
+    },
+    {
+        name: 'Slice',
+        abbreviation: 'slice',
+    },
+    {
+        name: 'Leaf',
+        abbreviation: 'leaf',
+    },
+    {
+        name: 'Stalk',
+        abbreviation: 'stalk',
+    },
+    {
+        name: 'Bunch',
+        abbreviation: 'bunch',
+    },
+    {
+        name: 'Head',
+        abbreviation: 'head',
+    }],
+};
+
+
+/* REQUEST FUNCTIONS */
+
+/* Request function that handles potentially dangerous requests
+   Ensures the user is logged in & redirects otherwise */
 export async function protectedRequest(url, method, data) {    
     let response = await fetch(url, {
         method: method,
@@ -20,6 +219,7 @@ export async function protectedRequest(url, method, data) {
     return response;
 }
 
+/* Request function that redirects if user isn't logged in */
 async function redirectRequest(url, method, data) {
     let response = await fetch(url, {
         method: method,
@@ -37,10 +237,6 @@ async function redirectRequest(url, method, data) {
     return response;
 }
 
-export function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
- }
-
 export async function requestWithToken(url, method, data) {
     return fetch(url, {
         method: method,
@@ -49,7 +245,6 @@ export async function requestWithToken(url, method, data) {
         },
         body: JSON.stringify(data)
     }).then(async response => {
-        response.json()
         if(response.status == 403 || response.status == 401) {
             if (await this.refreshToken())
                 return this.requestWithToken(url, method, data);
@@ -66,9 +261,10 @@ export async function requestWithToken(url, method, data) {
     });
 }
 
-export async function request(url, method, data) {
+export async function request(url, method, data, signal) {
     let res = await fetch(url, {
         method: method,
+        signal: signal,
         headers: {
             'Content-Type': 'application/json'
         },
@@ -101,24 +297,41 @@ function loginRedirect() {
     window.location.href = 'https://kitchen.quasardilla.com/#/auth/user/login?redirect=' + location.hash;
 }
 
-export async function refreshTagAutoComplete(event) {
-    let tags = event.srcElement.value.split(' ');
-    let suggestionContainer = document.getElementById('tagSuggestions')
+/* TAG AUTOCOMPLETE FUNCTIONALITY */
 
-    if(!tags || tags[tags.length - 1].length < 1) {
+let controller = new AbortController();
+let signal = controller.signal;
+let refreshingTag = false;
+
+export async function refreshTagAutoComplete(event, suggestionContainerID) {
+    let tags = event.srcElement.value.split(' ');
+    let suggestionContainer = document.getElementById(suggestionContainerID);
+
+    if(refreshingTag || controller.signal.aborted) {
+        controller.abort();
+        controller = new AbortController();
+        signal = controller.signal;
+    } else {
+        refreshingTag = true;
+    }
+
+    if(!tags || tags[tags.length - 1].length < 1 || !tags[tags.length - 1]) {
         suggestionContainer.innerHTML = '';
+        refreshingTag = false;
         return;
     }
 
-    request('https://kitchen.quasardilla.com/api/recipes/autocomplete/tag/', 'POST', {query: tags[tags.length - 1]})
+    request('https://kitchen.quasardilla.com/api/recipes/autocomplete/tag/', 'POST', {query: tags[tags.length - 1]}, signal)
     .then(async (response) => {
         if(response.status == 200) {
             suggestionContainer.innerHTML = '';
             let suggestedTags = await response.json();
 
+            console.log(suggestedTags)
+
             suggestedTags.forEach(tag => {
                 let tagElement = document.createElement('div');
-                tagElement.innerHTML = tag.name;
+                tagElement.innerHTML = tag.name + " (" + tag.count + ")";
                 
                 tagElement.onclick = () => {
                     tags[tags.length - 1] = tag.name;
@@ -130,76 +343,118 @@ export async function refreshTagAutoComplete(event) {
                 }
 
                 suggestionContainer.appendChild(tagElement);
+                console.log(suggestionContainer)
             });
         } else {
             suggestionContainer.innerHTML = '';
         }
+
+        refreshingTag = false;
     })
     .catch((error) => {
-        console.log(error);
+        refreshingTag = false;
     })
 }
 
-export async function sanitizeRecipeData(string) {
-    return escapeInput(await onlyAlphaNumericAndChars(string));
+/* SANITIZATION FUNCTIONS */
+
+export function sanitizeRecipeData(string) {
+    return escapeInput(string);
 }
 
-export async function sanitizeTagData(string) {
+export function sanitizeTagData(string) {
     return escapeTag(string);
 }
 
-export async function escapeInput(string) {
+export function unEscapeInput(string) {
     var entityMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-        '/': '&#x2F;',
-        '`': '&#x60;',
-        '=': '&#x3D;'
+        '&lt;': '<',
+        '&gt;': '>',
+        '&quot;': '"',
+        '&#39;': "'",
+        '&#96;': '`',
+        '&#47;': '/',
+        '&#92;': '\\',
+        '&#124;': '|',
+        '&#61;': '='
     };
 
-    return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+    return String(string).replace(/&(lt|gt|quot||#39|#96|#47|#92|#124|#61);/g, function (s) {
         return entityMap[s];
     });
 }
 
-export async function onlyAlphaNumericAndChars(string) {
-    return String(string).replace(/[^a-zA-Z0-9 -._~!@#$%^&*()+="']/g, '');
+export function unEscapeRecipe(recipe) {
+    recipe.recipe.title = unEscapeInput(recipe.recipe.title)
+    recipe.recipe.description = unEscapeInput(recipe.recipe.description)
+    recipe.recipe.notes = unEscapeInput(recipe.recipe.notes)
+
+    console.log(recipe.recipe.description)
+
+    for(let i = 0; i < recipe.recipe.ingredients.length; i++) {
+        recipe.recipe.ingredients[i].name = unEscapeInput(recipe.recipe.ingredients[i].name)
+    }
+
+    for(let i = 0; i < recipe.recipe.steps.length; i++) {
+        recipe.recipe.steps[i] = unEscapeInput(recipe.recipe.steps[i])
+    }
+
+    return recipe;
 }
 
-export async function onlyAlphaNumericAndAcceptedChars(string) {
+export function escapeInput(string) {
+    var entityMap = {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '`': '&#96;',
+        '/': '&#47;',
+        '\\': '&#92;',
+        '|': '&#124;',
+        '=': '&#61;',
+    };
+
+    return String(string).replace(/[<>"'`\/\\|=]/g, function (s) {
+        return entityMap[s];
+    });
+}
+
+export function onlyAlphaNumericAndChars(string) {
+    return String(string).replace(/[^a-zA-Z0-9 -._~!@#$%^&*:()[]{}+="']/g, '');
+}
+
+export function onlyAlphaNumericAndAcceptedChars(string) {
     return String(string).replace(/[^a-zA-Z0-9 -]/g, '');
 }
 
-export async function onlyAlphaNumeric(string) {
+export function onlyAlphaNumeric(string) {
     return String(string).replace(/[^a-zA-Z0-9]/g, '');
 }
-
-export async function onlyAlpha(string) {
+ 
+export function onlyAlpha(string) {
     return String(string).replace(/[^a-zA-Z]/g, '');
 }
 
-export async function escapeTag(string) {
-    str = String(string).replace(/[^a-z- ]/g, '');
-    tags = str.split(' ');
+export function escapeTag(string) {
+    let str = String(string).replace(/[^a-z_ ]/g, '');
+    let tags = str.split(' ');
     for(let i = 0; i < tags.length; i++) {
         tags[i] = tags[i].toLowerCase();
         
-        if (tag = '') {
-            tags.splice(tags.indexOf(tag), 1);
+        if (tags[i] == '') {
+            tags.splice(tags.indexOf(tags[i]), 1);
         }
     }
     return tags.join(' ');
 }
 
-export async function onlyNumeric(string) {
-    return String(string).replace(/[^0-9]/g, '');
+export function onlyNumeric(string) {
+    return String(string).replace(/[^0-9.]/g, '');
 }
 
-export async function validateTags(string) {
-    tags = String(string).split(' ');
+export function validateTags(string) {
+    let tags = String(string).split(' ');
 
     if(tags.length > 50) {
         return "There are too many tags! There can only be 50 tags per recipe.";
@@ -209,7 +464,37 @@ export async function validateTags(string) {
         if(tag.length > 32) {
             return "A tag is too long! Tags can only be 32 characters long.";
         }
+        if(/[^a-z_]/.test(tag)) {
+            return "A tag contains invalid characters! Tags can only contain lowercase letters and underscores.";
+        }
     });
 
-    return;
+    return '';
+}
+
+export function sanitizeImage() {
+    //to be implemented
+}
+
+/* Basic Utility Functions */
+export function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function getTime() {
+    let d = new Date();
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let str = "";
+
+    str += months[d.getMonth()];
+    str += " " + d.getDate();
+    str += ", " + d.getFullYear();
+    return str;
+}
+
+/* Resizes text area to current text */
+export function textareaChanged(event) {
+    let textarea = event.srcElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
 }

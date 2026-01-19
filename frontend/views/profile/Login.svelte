@@ -1,7 +1,7 @@
 <script>
-    import Icon from '../modules/Icon.svelte'
+    import Icon from '../../modules/Icon.svelte'
     import { onMount } from 'svelte';
-    import scripts from '../sharedScripts.js';
+    let scripts = require('../../sharedScripts.js')
     // import Cancel from '../assets/icons/Cancel.svg';
     // import CancelDark from '../assets/icons/CancelDark.svg';
     // import Check from '../assets/icons/Check.svg';
@@ -71,6 +71,10 @@
                     window.location.href = 'https://kitchen.quasardilla.com/#/home';
                     return;
                 }
+                if (redirect == null || redirect == undefined || redirect == '') {
+                    redirect = '#/home';
+                }
+                document.body.classList.add('logged-in');
                 window.location.href = 'https://kitchen.quasardilla.com/' + redirect;
             } else {
                 document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
@@ -102,6 +106,11 @@
                     window.location.href = 'https://kitchen.quasardilla.com/#/home';
                     return;
                 }
+
+                if (redirect == null || redirect == undefined || redirect == '') {
+                    redirect = '#/home';
+                }
+
                 window.location.href = 'https://kitchen.quasardilla.com/' + redirect;
             } else {
                 document.getElementById('validation-message').innerHTML = 'Invalid username or password!';
@@ -112,7 +121,7 @@
         })
     }
 
-    function submitRegister(e) {
+    async function submitRegister(e) {
         if(!validateEmail() || !validateUsername() || !validatePassword() || !checkPasswords()) {
             return;
         }
@@ -121,7 +130,7 @@
         let username = document.getElementById('register-form').elements.username.value
         let password = document.getElementById('register-form').elements.password.value
 
-        username = scripts.sanitizeRecipeData(username)
+        username = await scripts.sanitizeRecipeData(username)
 
         let newUser = {
             email: email,
@@ -142,7 +151,7 @@
                 document.getElementById('login-form').elements.password.value = document.getElementById('register-form').elements.password.value
                 submitLogin();
             } else {
-                document.getElementById('validation-message').innerHTML = 'Invalid email or password!';
+                document.getElementById('reg-email-err').innerHTML = 'Email is already in use!';
             }
         })
     }

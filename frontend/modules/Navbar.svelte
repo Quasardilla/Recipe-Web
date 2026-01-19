@@ -1,19 +1,19 @@
 <script>
     import { onMount } from 'svelte';
     import Icon from './Icon.svelte'
-
     let scripts = require('../sharedScripts.js');
-    
     const KitchenIconDark = require('../assets/icons/KitchenFullTransparentWhite.svg');
     const KitchenIconLight = require('../assets/icons/KitchenFullTransparentBlack.svg');
-    // const ProfileIcon = require('../assets/icons/Person.svg');
-    // const ThemeIconDark = require('../assets/icons/Sun.svg');
-    // const ThemeIconLight = require('../assets/icons/Moon.svg');
+    const KitchenIconMini = require('../assets/icons/KitchenIconTransparent.svg');
     
     let iconUrl = 'https://kitchen.quasardilla.com/';
+    let isMobile = mediaQueryMobile();
+    let isMobileSearch = mediaQueryMobileSearch();
+
     
     onMount(async () => {
         verifyTheme()
+        localStorage.setItem('refreshingToken', 'false')
         
         scripts.requestWithToken('https://kitchen.quasardilla.com/api/tokens/', 'GET')
         .then((response) => {
@@ -25,14 +25,51 @@
                 iconUrl = 'https://kitchen.quasardilla.com/';
             }
         })
+
+        window.addEventListener("resize", function() {
+            if(mediaQueryMobile()) {
+                isMobile = true;
+            }
+            else {
+                isMobile = false;
+            }
+
+            if(mediaQueryMobileSearch()) {
+                this.document.getElementById('search').style.display = 'none';
+                this.document.getElementById('mobile-search').style.display = 'flex';
+            } else {
+                this.document.getElementById('search').style.display = 'flex';
+                this.document.getElementById('mobile-search').style.display = 'none';
+            }
+        });
     });
 
+    function mediaQueryMobile() {
+        return window.matchMedia('(max-width: 700px)').matches;
+    }
+
+    function mediaQueryMobileSearch() {
+        return window.matchMedia('(max-width: 500px)').matches;
+    }
+
     function revealLogoutModel() {
-        document.querySelector('.modal').style.display = 'block';
+        document.getElementById('logout-modal').style.display = 'initial';
+        document.getElementById('search-modal').style.display = 'none';
     }
 
     function hideLogoutModel() {
-        document.querySelector('.modal').style.display = 'none';
+        document.getElementById('logout-modal').style.display = 'none';
+    }
+
+    function revealSearchModel() {
+        document.getElementById('search-modal').style.display = 'initial';
+        document.getElementById('logout-modal').style.display = 'none';
+
+        document.getElementById('search-tags').focus();
+    }
+
+    function hideSearchModel() {
+        document.getElementById('search-modal').style.display = 'none';
     }
 
     async function logout() {
@@ -89,81 +126,119 @@
 </script>
 
 <main>
-    <nav id="navBar">
-        <div id="logo">
-            <a href={iconUrl}>
-                <img alt="main-icon" class="dark-icon" src={KitchenIconDark}/>
-                <img alt="main-icon" class="light-icon" src={KitchenIconLight}/>
-            </a>
-        </div>
-        <div id="search">
-            <img id="search-icon" alt="search-icon"/>
-            <button id="search-bar-mini"></button>
-        </div>
-        <div id="right-aligned-content">
-            <button class="nav-button" id="theme-toggle" on:click={toggleTheme}>
-                <!-- <img alt="theme-icon" class="dark-icon" src={ThemeIconDark}>
-                <img alt="theme-icon" class="light-icon" src={ThemeIconLight}> -->
-                <Icon class="light-icon" name='sun'/>
-                <Icon class="dark-icon" name='moon'/>
-            </button>
-            <div id="profile-content">
-                <button class="nav-button" id="profile" on:click={(event) => {console.log(event)}}>
-                    <Icon name='person'/>
+    <div class="flex-column nav-container">
+        <nav id="navBar">
+            <div id="logo">
+                <a href={iconUrl}>
+                    {#if isMobile}
+                        <img alt="main-icon" src={KitchenIconMini}/>
+                    {:else}
+                        <img alt="main-icon" class="dark-icon" src={KitchenIconDark}/>
+                        <img alt="main-icon" class="light-icon" src={KitchenIconLight}/>
+                    {/if}
+                </a>
+            </div>
+            <label id="search" class="flex-row flex-center" style="display: {isMobileSearch ? 'none' : 'flex'};">
+                <Icon name='search'/>
+                <input id="search-bar-mini" placeholder="search" on:click={revealSearchModel} aria-readonly="true" readOnly="true" readonly="true"/>
+            </label>
+            <div id="right-aligned-content">
+                <button class="nav-button" id="theme-toggle" on:click={toggleTheme}>
+                    <!-- <img alt="theme-icon" class="dark-icon" src={ThemeIconDark}>
+                    <img alt="theme-icon" class="light-icon" src={ThemeIconLight}> -->
+                    <Icon class="light-icon" name='sun'/>
+                    <Icon class="dark-icon" name='moon'/>
                 </button>
-                <div id="profile-dropdown" tabindex="-1">
-                    <div class="logged-out-item">
-                        <h3>Log in or create an account</h3>
-                        <a href="/#/auth/user/login">
-                            <button id="login-button">Log in</button>
-                        </a>
-
-                        <hr class="hl-dropdown">
+                <div id="profile-content">
+                    <button class="nav-button" id="profile" on:click={(event) => {console.log(event)}}>
+                        <Icon name='person'/>
+                    </button>
+                    <div id="profile-dropdown" tabindex="-1">
+                        <div class="logged-out-item">
+                            <h3>Log in or create an account</h3>
+                            <a href="/#/auth/user/login">
+                                <button id="login-button">Log in</button>
+                            </a>
+    
+                            <hr class="hl-dropdown">
+                        </div>
+                        <div class="logged-in-item">
+                            <button class="profile-dropdown-button">Profile</button>
+                            <button class="profile-dropdown-button">Settings</button>
+                            <button class="profile-dropdown-button" on:click={revealLogoutModel}>Logout</button>
+                        </div>
                     </div>
-
-                    <button id="profile-dropdown-button">Profile</button>
-                    <button id="profile-dropdown-button">Settings</button>
-                    <button id="profile-dropdown-button" on:click={revealLogoutModel}>Logout</button>
                 </div>
             </div>
+    
+        </nav>
+    
+        <div id="mobile-search-container" style="display: {!isMobileSearch ? 'none' : 'flex'};">
+            <label id="mobile-search" class="flex-row flex-center">
+                <Icon name='search'/>
+                <input id="search-bar-mini" placeholder="search" on:click={revealSearchModel} aria-readonly="true" readOnly="true" readonly="true"/>
+            </label>
         </div>
-    </nav>
+    </div>
 
-    <div style="min-height: 7rem"></div>
+    <div style="min-height: {isMobileSearch ? '15rem' : '9rem'}"></div>
 
-    <div class="modal">
+    <div class="modal" id="logout-modal" on:click|self={hideLogoutModel} on:keydown={null} role="dialog" aria-modal="true" tabindex="-1">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Log Out</h2>
             </div>
             <div class="modal-body">
                 <p>Are You sure you want to log out?</p>
-                <div>
+                <div class="flex-row flex-center">
                     <button on:click={logout}>Log Out</button>
                     <button on:click={hideLogoutModel}>Cancel</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <h3>Modal Footer</h3>           
+        </div>
+    </div>
+    <div class="modal" id="search-modal" on:click|self={hideSearchModel} on:keydown={null} role="dialog" aria-modal="true" tabindex="-1">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Search Recipes</h2>
+            </div>
+            <div class="modal-body">
+                <label id="modal-search" class="flex-row flex-center">
+                    <Icon name='search'/>
+                    <input id="search-tags" placeholder="search" autocomplete="off" on:input={(event) => {scripts.refreshTagAutoComplete(event, 'tag-search-suggestions')}}/>
+                </label>
+                <div id="tag-search-suggestions"></div>
+
+                <div>
+                    <button on:click={hideSearchModel}>Cancel</button>
+                </div>
             </div>
         </div>
     </div>
 </main>
 
 <style>
-    #navBar {
+    .nav-container {
         width: -webkit-fill-available;
         width: -moz-available;
         width: fill-available;
-        
-        height: 7rem;
+
+        display: flex;
+        flex-direction: column;
+
         background-color: var(--primary-dark);
+        position: fixed;
+        z-index: 100;
+        padding: 1rem 0
+    }
+
+    #navBar {
+        height: 7rem;
+
         padding: 0 2rem 0 2rem;
         align-items: center;
         display: flex;
         justify-content: space-between;
-        position: fixed;
-        z-index: 100;
     }
 
     .nav-button {
@@ -187,6 +262,58 @@
         border: 0.2rem solid var(--secondary-dark);
     }
 
+    #search, #mobile-search, #modal-search {
+        border: 0.2rem solid var(--secondary);
+        border-radius: 2rem;
+    }
+
+    #search {
+        max-width: 40rem;
+        width: 30vw;
+        margin-left: -5vw;
+    }
+
+    #modal-search {
+        max-width: 40rem;
+        width: 100%;
+        margin: 0 auto 3rem auto;
+    }
+
+    #mobile-search-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    #mobile-search {
+        width: 70vw;
+        background-color: var(--primary-dark);
+        padding: 0 2rem 0 2rem;
+        height: 4rem;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        z-index: 50;
+    }
+
+    :global(#search .icon, #mobile-search .icon, #modal-search .icon) {
+        min-width: 3rem;
+        width: 3rem;
+        height: auto;
+        padding: 0.5rem;
+    }
+
+    #search input, #mobile-search input, #modal-search input {
+        background-color: transparent;
+        border: none;
+        width: 100%;
+    }
+
+    #search input:focus, #mobile-search input:focus, #modal-search input:focus {
+        outline: none;
+    }
+
     #right-aligned-content {
         height: 100%;
         display: flex;
@@ -196,22 +323,31 @@
 
     #profile-content #profile-dropdown {
         position: absolute;
+        top: 6rem;
+        right: 2rem;
         width: 15rem;
+        margin: 1rem 0 0 0;
+
         background-color: var(--primary-dark);
+        
         border-radius: 1rem;
-        border: 0.2rem solid var(--secondary-dark);
-        display: none;
+        border-color: transparent;
+        
+        display: flex;
         flex-direction: column;
-        transition: all 0.2s ease-in-out;
+        transition: height 0.2s ease-in-out;
         overflow: hidden;
+        height: 0px;
+    }
+
+    #profile-dropdown {
+        z-index: 100;
     }
     
 
     #profile-content:hover #profile-dropdown, #profile-content:active #profile-dropdown, #profile-content:focus #profile-dropdown {
-        display: flex;
-        margin: 1rem 0 0 0;
-        top: 6rem;
-        right: 2rem;
+        border: 0.2rem solid var(--secondary-dark);
+        height: 11.5rem;
     }
 
     #profile-dropdown h3 {
@@ -283,23 +419,50 @@
         width: auto;
     }
 
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        padding-top: 100px;
-        left: 0;
-        top: 0;
+    #tag-search-suggestions {
+        position: relative;
+        max-width: 40rem;
         width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
+        margin: 0 auto;
+        margin-top: -3rem;
+        z-index: 300;
     }
 
-    .modal-content {
-        background-color: var(--primary-dark);
-        margin: auto;
-        padding: 20px;
-        border: 1px solid var(--secondary-dark);
-        width: 80%;
+    #tag-search-suggestions :global(div) {
+        cursor: pointer;
+        padding: 0.5rem;
+        border-bottom: 0.2rem solid var(--secondary-dark);
+        text-align: center;
+    }
+
+
+    @media (max-width: 800px) {
+        #search {
+            margin: 0;
+        }
+
+        .modal-content {
+            width: 80vw;
+        }
+    }
+
+    @media (max-width: 650px) {
+        #navBar {
+            padding: 0 1rem 0 1rem;
+        }
+
+        #mobile-search {
+            padding: 0;
+        }
+
+        #profile-content:hover #profile-dropdown, #profile-content:active #profile-dropdown, #profile-content:focus #profile-dropdown {
+            right: 1rem;
+        }
+    }
+
+    @media (max-width: 500px) {
+        #search-modal {
+            padding-top: 20rem;
+        }
     }
 </style>

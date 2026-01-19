@@ -1,10 +1,16 @@
 <script>
-    import Icon from '../modules/Icon.svelte';
+    import Icon from '../../modules/Icon.svelte';
+    import {onMount} from 'svelte';
 
-    const stars = require('../assets/icons/Stars.svg')
-    const starShadows = require('../assets/icons/StarShadows.svg')
-    const placeholder = require('../assets/imgs/KitchenPlaceHolder.svg')
-    const scripts = require('../sharedScripts.js')
+    const scripts = require('../../sharedScripts.js')
+    const recipeUtil = require('./recipeScripts')
+
+    const stars = require('../../assets/icons/Stars.svg')
+    const starShadows = require('../../assets/icons/StarShadows.svg')
+    const placeholder = require('../../assets/imgs/KitchenPlaceHolder.svg')
+
+    let metricUnits = scripts.metricUnits
+    let standardUnits = scripts.standardUnits
 
     let userData;
     let steps = [''];
@@ -13,197 +19,8 @@
     let isRegionStandard = true;
     let unitSection = 'fluid';
 
-    let standardUnits = {
-        fluid: [{
-            name: 'Fluid Ounce',
-            abbreviation: 'fl oz',
-            toCups: 8,
-            toLiters: 35.19508,
-        },
-        {
-            name: 'Pint',
-            abbreviation: 'pt',
-            toCups: 0.5,
-            toLiters: 1.759754,
-        },
-        {
-            name: 'Quart',
-            abbreviation: 'qt',
-            toCups: 0.25,
-            toLiters: 0.8798771,
-        },
-        {
-            name: 'Gallon',
-            abbreviation: 'gal',
-            toCups: 0.0625,
-            toLiters: 0.2199693,
-        }],
-        dry: [{
-            name: 'Cup',
-            abbreviation: 'C',
-            toCups: 1,
-            toLiters: 3.519508,
-        },
-        {
-            name: 'Tablespoon',
-            abbreviation: 'Tbsp',
-            toCups: 16,
-            toLiters: 56.31213,
-        },
-        {
-            name: 'Teaspoon',
-            abbreviation: 'tsp',
-            toCups: 48,
-            toLiters: 168.9364,
-        }],
-        weight: [{
-            name: 'Ounce',
-            abbreviation: 'oz',
-            toPounds: 16,
-            toKilograms: 35.27396,
-        },
-        {
-            name: 'Pound',
-            abbreviation: 'lb',
-            toPounds: 1,
-            toKilograms: 2.204623,
-        }],
-        estimate: [{
-            name: 'Pinch',
-            abbreviation: 'pinch',
-        },
-        {
-            name: 'Dash',
-            abbreviation: 'dash',
-        },
-        {
-            name: 'Handful',
-            abbreviation: 'handful',
-        },
-        {
-            name: 'Sprinkle',
-            abbreviation: 'sprinkle',
-        },
-        {
-            name: 'Dollop',
-            abbreviation: 'dollop',
-        },
-        {
-            name: 'Clove',
-            abbreviation: 'clove',
-        },
-        {
-            name: 'Piece',
-            abbreviation: 'piece',
-        },
-        {
-            name: 'Slice',
-            abbreviation: 'slice',
-        },
-        {
-            name: 'Leaf',
-            abbreviation: 'leaf',
-        },
-        {
-            name: 'Stalk',
-            abbreviation: 'stalk',
-        },
-        {
-            name: 'Bunch',
-            abbreviation: 'bunch',
-        },
-        {
-            name: 'Head',
-            abbreviation: 'head',
-        }],
-    };
-
-    let metricUnits = {
-        fluid: [{
-            name: 'Milliliter',
-            abbreviation: 'mL',
-            toLiters: 1000,
-            toCups: 236.5882,
-        },
-        {
-            name: 'Liter',
-            abbreviation: 'L',
-            toLiters: 1,
-            toCups: 0.2365882, 
-        }],
-        dry: [{
-            name: 'Milliliter',
-            abbreviation: 'mL',
-            toLiters: 1000,
-            toCups: 236.5882,
-        },
-        {
-            name: 'Tablespoon',
-            abbreviation: 'Tbsp',
-            toLiters: 66.6667,
-            toCups: 16,
-        }],
-        weight: [{
-             name: 'Gram',
-             abbreviation: 'g',
-             toKilograms: 1000,
-             toPounds: 454,
-        },
-        {
-             name: 'Kilogram',
-             abbreviation: 'kg',
-             toKilograms: 1,
-             toPounds: 0.454,
-        }],
-        estimate: [{
-            name: 'Pinch',
-            abbreviation: 'pinch',
-        },
-        {
-            name: 'Dash',
-            abbreviation: 'dash',
-        },
-        {
-            name: 'Handful',
-            abbreviation: 'handful',
-        },
-        {
-            name: 'Sprinkle',
-            abbreviation: 'sprinkle',
-        },
-        {
-            name: 'Dollop',
-            abbreviation: 'dollop',
-        },
-        {
-            name: 'Clove',
-            abbreviation: 'clove',
-        },
-        {
-            name: 'Piece',
-            abbreviation: 'piece',
-        },
-        {
-            name: 'Slice',
-            abbreviation: 'slice',
-        },
-        {
-            name: 'Leaf',
-            abbreviation: 'leaf',
-        },
-        {
-            name: 'Stalk',
-            abbreviation: 'stalk',
-        },
-        {
-            name: 'Bunch',
-            abbreviation: 'bunch',
-        },
-        {
-            name: 'Head',
-            abbreviation: 'head',
-        }],
-    };
+    let currentUnitSelectorElement;
+    let currentUnitSelectorIndex;
 
     //IIFE to run as soon as it's defined, not waiting for page to load
     (async () => {
@@ -211,125 +28,23 @@
         userData = (await res.json()).user
     })()
 
-    function getTime() {
-        let d = new Date();
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        let str = "";
+    onMount(() => {
+        let params = recipeUtil.getSavedRecipe();
 
-        str += months[d.getMonth()];
-        str += " " + d.getDate();
-        str += ", " + d.getFullYear();
-        return str;
-    }
-
-    function textareaChanged(event) {
-        let textarea = event.srcElement;
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    function addIngredient() {
-        if(ingredients.length > 100) {
-            document.getElementById('ingredient-err').innerText = 'There is a maximum of 100 ingredients per recipe. Please remove an ingredient before adding another.';
-            document.getElementById('ingredient-err').classList.remove('hidden');
-            return;
-        } else {
-            document.getElementById('ingredient-err').classList.add('hidden');
-        }
-
-        ingredients.push({
-            unit: '',
-            amount: null,
-            name: ''
-        });
+        ingredients = params[0]
+        steps = params[1]
 
         ingredients = ingredients;
-    }
-
-    function removeIngredient(index) {
-        if(ingredients.length <= 1) return;
-
-        ingredients.splice(index, 1)
-        ingredients = ingredients;
-    }
-
-    async function addStep() {
-        if(steps.length > 50) {
-            document.getElementById('step-err').innerText = 'There is a maximum of 50 steps per recipe. Please remove a step before adding another.';
-            document.getElementById('step-err').classList.remove('hidden');
-            return;
-        } else {
-            document.getElementById('step-err').classList.add('hidden');
-        }
-
-        steps.push("")
         steps = steps;
+    });
+
+    function changeUnitRegion() {
+        isRegionStandard = !isRegionStandard;
     }
 
-    function removeStep(index) {
-        if(steps.length <= 1) return;
-
-        steps.splice(index, 1)
-        steps = steps;
+    function setUnitSection(section) {
+        unitSection = section;
     }
-
-    async function submitRecipe() {
-        let title = await document.getElementById('title').value;
-        let cooktime = await document.getElementById('cooktime').value;
-        let preptime = await document.getElementById('preptime').value;
-        let servings = await document.getElementById('servings').value;
-        let description = await document.getElementById('description').value;
-        // let thumbnail
-        let notes = await document.getElementById('notes').value;
-        let tags = await document.getElementById('tags').value;
-        tags = await scripts.sanitizeTagData(tags);
-
-        let result = scripts.verifyTags(tags)
-        if(result) {
-            document.getElementById('tag-err').innerText = result;
-            document.getElementById('tags').classList.remove('hidden') 
-            return;
-        } else {
-            document.getElementById('tag-err').innerText = '';
-            document.getElementById('tags').classList.add('hidden') 
-        }
-
-        for(let i = 0; i < ingredients.length; i++) {
-            ingredients[i].amount = await scripts.onlyNumeric(ingredients[i].amount);
-            ingredients[i].name = await scripts.sanitizeRecipeData(ingredients[i].name);
-        }
-
-        for(let i = 0; i < steps.length; i++) {
-            steps[i] = await scripts.sanitizeRecipeData(steps[i]);
-        }
-
-        let recipe = {
-            title: await scripts.sanitizeRecipeData(title),
-            cooktime: await scripts.onlyNumeric(cooktime),
-            preptime: await scripts.onlyNumeric(preptime),
-            servings: await scripts.onlyNumeric(servings),
-            description: await scripts.sanitizeRecipeData(description),
-
-            ingredients: ingredients,
-            steps: steps,
-
-            notes: await scripts.sanitizeRecipeData(notes),
-            tags: tags.split(' ')
-        }
-
-        // scripts.request('https://kitchen.quasardilla.com/api/recipes/', 'POST', recipe)
-        // .then((response) => {
-        //     if(response.status == 201) {
-        //         window.location.href = 'https://kitchen.quasardilla.com/#/home';
-        //     }
-        // })
-        // .catch((error) => {
-        //     console.log(error);
-        // })
-    }
-
-    let currentUnitSelectorElement;
-    let currentUnitSelectorIndex;
 
     function showUnitSelector(event) {
         let button = event.srcElement;
@@ -337,7 +52,7 @@
         selector.style.top = (button.offsetTop + button.offsetHeight + 2);
         selector.style.left = button.offsetLeft;
         currentUnitSelectorIndex = button.id.split('-')[2];    
-    
+
         if(button.offsetLeft + selector.clientWidth > window.innerWidth) {
             selector.style.left = window.innerWidth - selector.clientWidth;
         }
@@ -350,27 +65,43 @@
         }
     }
 
-    function changeUnitRegion() {
-        isRegionStandard = !isRegionStandard;
-    }
-
-    function setUnitSection(section) {
-        unitSection = section;
-    }
-
     function setUnit(unit) {
+        recipeUtil.saveCurrentRecipe(ingredients, steps);
         ingredients[currentUnitSelectorIndex].unit = unit;
         ingredients = ingredients;
 
         unitSelectorShown = false;
     }
 
+    async function submitRecipe() {
+        let recipe = await recipeUtil.recipeToJSON(ingredients, steps);
+
+        for(let i = 0; i < ingredients.length; i++) {
+            if(ingredients[i].unit)
+                ingredients[i].unit = ingredients[i].unit.name;
+        }
+
+        console.log(recipe)
+
+        scripts.protectedRequest('https://kitchen.quasardilla.com/api/recipes/', 'POST', recipe)
+        .then(async (response) => {
+            if(response.status == 200) {
+                response = await response.json();
+                localStorage.removeItem('unsavedRecipe');
+                window.location.href = 'https://kitchen.quasardilla.com/#/recipe/' + response.UUID;
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
+
 </script>
 
 <main class="flex-column flex-center">
     <div id="recipe-banner"></div>
-    <form id="recipe-container" class="flex-column" on:submit|preventDefault={submitRecipe}>
-        <textarea class="title" id="title" placeholder="Title" name='title' autocomplete="off" rows='1' wrap="soft" on:change={textareaChanged} required></textarea>
+    <form id="recipe-container" class="flex-column" autocomplete="off" on:submit|preventDefault={submitRecipe}>
+        <textarea class="title" id="title" placeholder="Title" name='title' autocomplete="off" rows='1' maxlength="30" wrap="soft" on:change={scripts.textareaChanged} on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)} required></textarea>
         <div class="flex-row">
             <div id="rating-container">
                 <img id="stars" src={stars} alt="stars">
@@ -379,28 +110,28 @@
             </div>
             <div id="user-info-container">
                 <p class="username">By: {userData ? userData.username : 'User'}</p>
-                <p class="date">{"Created on: " + getTime()}</p>
-                <p class="date">{"Updated on: " + getTime()}</p>
+                <p class="date">{"Published on: " + scripts.getTime()}</p>
+                <p class="date">{"Edited on: " + scripts.getTime()}</p>
             </div>
         </div>
         <hr>
         <div class="flex-row recipe-info-div">
             <div class="flex-col">
                 <div class="flex-row">
-                    <p>Cook time:</p> <input type="number" id="cooktime" name="cooktime" min="0" required> <p>minutes</p>
+                    <p>Cook time:</p> <input type="number" id="cooktime" name="cooktime" min="0" max="10080" required on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}> <p>minutes</p>
                 </div>
                 <div class="flex-row">
-                    <p>Prep time:</p> <input type="number" id="preptime" name="preptime" min="0" required> <p>minutes</p>
+                    <p>Prep time:</p> <input type="number" id="preptime" name="preptime" min="0" max="10080" required on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}> <p>minutes</p>
                 </div>
             </div>
             <div class="flex-row">
-                <p>Servings:</p> <input type="number" id="servings" name="servings" min="0" required>
+                <p>Servings:</p> <input type="number" id="servings" name="servings" min="0" max="500" required on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}>
             </div>
         </div>
         <div class="image-container flex-row flex-center">
             <img id="main-food-img" src={placeholder} alt="food-main">
         </div>
-        <textarea type="text" class="large-textarea" id="description" placeholder="About this dish..." name='description' autocomplete="off" maxlength="500" rows='5' required></textarea>
+        <textarea type="text" class="large-textarea" id="description" placeholder="About this dish..." name='description' autocomplete="off" maxlength="500" rows='5' required on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}></textarea>
         
         <p class="header">Ingredients</p>
         <hr>
@@ -408,10 +139,10 @@
         <div class="ingredients-container">
             {#each ingredients as ingredient, i}
                 <div class="flex-row">
-                    <input class="ingredient-amount" type="number" name="ingredientAmount" min="0" step=".001" placeholder="Qty" bind:value={ingredient.amount} required>
+                    <input class="ingredient-amount" type="number" name="ingredientAmount" min="0" max="1000" step=".001" placeholder="Qty" bind:value={ingredient.amount} required on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}>
                     <button type="button" id="unit-selector-{i}" on:click={showUnitSelector}>{(ingredient.unit ? ingredient.unit.abbreviation : 'Unit')}</button>
-                    <input class="ingredient-name" type="text" name="ingredientName" placeholder="Ingredient" bind:value={ingredient.name} required>
-                    <button class="ingredient-delete" type="button" on:click={removeIngredient(ingredients.indexOf(ingredient))}><Icon name="trash"/></button>
+                    <input class="ingredient-name" type="text" name="ingredientName" placeholder="Ingredient" bind:value={ingredient.name} required on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}>
+                    <button class="ingredient-delete" type="button" on:click={() => {recipeUtil.removeIngredient(ingredients, ingredients.indexOf(ingredient)); ingredients = ingredients}}><Icon name="trash"/></button>
                 </div>
             {/each}
             <p class="input-error" id="ingredient-err"></p>
@@ -478,7 +209,7 @@
             </div>
         </div>
 
-        <button type='button' class="primary-button" on:click={addIngredient}>Add Ingredient</button>
+        <button type='button' class="primary-button" on:click={() => {recipeUtil.addIngredient(ingredients); ingredients = ingredients;}}>Add Ingredient</button>
         
         <p class="header">Steps</p>
         <div class="steps">
@@ -486,24 +217,24 @@
             {#each steps as step, i}
                 <div class="flex-row flex-center">
                     <p class="step-num">{i + 1}. </p>
-                    <textarea type="text" class="step" name="steps" bind:value={step} required wrap='soft' rows='2'></textarea>
-                    <button type="button" on:click={() => {removeStep(i)}}><Icon name="trash"/></button>
+                    <textarea type="text" class="step" name="steps" bind:value={step} required wrap='soft' rows='2' on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}></textarea>
+                    <button type="button" on:click={() => {recipeUtil.removeStep(steps, i); steps = steps;}}><Icon name="trash"/></button>
                 </div>
                 <hr>
             {/each}
             <p class="input-error" id="step-err"></p>
         </div>
-        <button type='button' class="primary-button" on:click={addStep}>Add Step</button>
+        <button type='button' class="primary-button" on:click={() => {recipeUtil.addStep(steps); steps = steps;}}>Add Step</button>
 
 
         <p class="header">Notes</p>
         <hr>
-        <textarea type="text" class="large-textarea" id="notes" placeholder="Notes from the chef" name='notes' autocomplete="off" maxlength="500" rows='5' required></textarea>
+        <textarea type="text" class="large-textarea" id="notes" placeholder="Notes from the chef" name='notes' autocomplete="off" maxlength="500" rows='5' on:input={recipeUtil.saveCurrentRecipe(ingredients, steps)}></textarea>
 
         <p class="header">Tags</p>
         <hr>
         <div class="form-group">
-            <input type="text" id="tags" name="tags" placeholder="Tag anything from ingredients to cooking style!" required on:input={scripts.refreshTagAutoComplete}>
+            <input type="text" id="tags" name="tags" maxlength="1650" placeholder="Tag anything from ingredients to cooking style!" required on:input={(event) => {scripts.refreshTagAutoComplete(event, 'tagSuggestions')}} on:change={recipeUtil.saveCurrentRecipe(ingredients, steps)}>
             <p class="input-error" id="tag-err"></p>
         </div>
 

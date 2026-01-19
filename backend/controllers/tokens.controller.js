@@ -9,7 +9,9 @@ const Model = db[manager.fileName];
 // Verify User Information (username and password)
 exports.refreshAccessToken = (req, res) => {	
     var cookies = cookie.parse(req.headers.cookie || '');
-    const token = cookies.refreshToken;
+    const token = cookies.ck_refreshTok;
+
+    console.log("refresh token: " + token)
 
     if(token) {
         jwtManager.VerifyRefreshToken(token, req, res)
@@ -22,7 +24,7 @@ exports.refreshAccessToken = (req, res) => {
 }
 
 exports.deleteToken = (req, res) => {	
-    const refreshToken = req.body.token;
+    const refreshToken = req.body.ck_refreshTok;
     Model.destroy({
         where: {
             token: refreshToken,

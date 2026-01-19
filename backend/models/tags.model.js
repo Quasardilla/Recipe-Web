@@ -10,6 +10,10 @@ module.exports = (conn, Sequelize) => {
         type: Sequelize.STRING,
         unique: true,
     },
+    count: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+    },
 
 	},
     {

@@ -15,6 +15,8 @@ const apiLimiter = rateLimit({
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
   
+app.set('trust proxy', 3 /* number of proxies between user and server */)
+
 app.use('/api', apiLimiter)
 
 app.use(express.static(path.join(__dirname, "dist")));

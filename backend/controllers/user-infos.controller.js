@@ -38,18 +38,20 @@ exports.validateUser = (req, res) => {
             return;
         }
 
-        if(argon2.verify(usercreds.password, req.body.password)) {
-            res.cookie(cookie.serialize('accessToken', jwtManager.GenerateAccessToken(user, false), {
-                httpOnly: true,
-                secure: true,
-                maxAge: 60 * 15 // 15 minutes
-            }));
+        verify = await argon2.verify(usercreds.password, req.body.password)
+        console.log(verify)
 
-            res.cookie(cookie.serialize('refreshToken', jwtManager.GenerateRefreshToken(user), {
+        if(verify) {
+            res.cookie('ck_accessTok', jwtManager.GenerateAccessToken(user, false), {
                 httpOnly: true,
                 secure: true,
-                maxAge: 60 * 60 * 24 * 5 // 5 days
-            }));
+                maxAge: 1000 * 60 * 15 // 15 minutes
+            });
+            res.cookie('ck_refreshTok', jwtManager.GenerateRefreshToken(user), {
+                httpOnly: true,
+                secure: true,
+                maxAge: 1000 * 60 * 60 * 24 * 5 // 5 days
+            });
             res.status(200).send({
                 message: "User was validated successfully.",
                 user: user,
@@ -92,16 +94,16 @@ exports.validateGoogleUser = async (req, res) => {
             return;
         }
         else {
-            res.cookie(cookie.serialize('accessToken', jwtManager.GenerateAccessToken(user, false), {
+            res.cookie('ck_accessTok', jwtManager.GenerateAccessToken(user, false), {
                 httpOnly: true,
                 secure: true,
-                maxAge: 60 * 15 // 15 minutes
-            }));
-            res.cookie(cookie.serialize('refreshToken', jwtManager.GenerateRefreshToken(user), {
+                maxAge: 1000 * 60 * 15 // 15 minutes
+            });
+            res.cookie('ck_refreshTok', jwtManager.GenerateRefreshToken(user), {
                 httpOnly: true,
                 secure: true,
-                maxAge: 60 * 60 * 24 * 5 // 5 days
-            }));
+                maxAge: 1000 * 60 * 60 * 24 * 5 // 5 days
+            });
             res.status(200).send({
                 message: "User was validated successfully.",
                 user: user,

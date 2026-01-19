@@ -61,7 +61,7 @@ body {
 }
 
 .logged-in .logged-in-item {
-    display: block;
+    display: initial;
 }
 
 .flex-row {
@@ -113,4 +113,34 @@ button, input[type="button"] {
 .primary-button {
     background-color: var(--tertiary);
     color: var(--primary-text-color);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 150;
+    padding-top: 15rem;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-header {
+    margin-top: 0;
+}
+
+.modal-content {
+    background-color: var(--primary-dark);
+    margin: auto;
+    padding: 20px;
+    border: 1px solid var(--secondary-dark);
+    width: 60vw;
+    max-width: 80rem;
+}
+
+.modal-content button {
+    margin: 0 2rem;
+    min-width: 15rem;
 }
